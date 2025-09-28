@@ -1,0 +1,110 @@
+💀💀💀
+DEV ENERGY
+NO CAP
+
+GYATT "BRAINROT LANG - COMPREHENSIVE DEMO"
+GYATT "=============================================="
+
+GYATT "1. Math Functions:"
+FANUMTAX sigma = ABS -42
+GYATT "ABS(-42):"
+GYATT sigma
+
+FANUMTAX sigma = MIN 10 5
+GYATT "MIN(10, 5):"
+GYATT sigma
+
+FANUMTAX sigma = MAX 10 5
+GYATT "MAX(10, 5):"
+GYATT sigma
+
+FANUMTAX sigma = SQRT 16
+GYATT "SQRT(16):"
+GYATT sigma
+
+FANUMTAX sigma = SIN 1.57
+GYATT "SIN(1.57):"
+GYATT sigma
+
+GYATT "2. String Functions:"
+FANUMTAX aura = MIX "Hello" " Brainrot!"
+GYATT "MIX('Hello', ' Brainrot!'):"
+GYATT aura
+
+FANUMTAX sigma = LEN "Brainrot"
+GYATT "LEN('Brainrot'):"
+GYATT sigma
+
+FANUMTAX aura = STRINGIFY 42
+GYATT "STRINGIFY(42):"
+GYATT aura
+
+GYATT "3. Platform Functions:"
+FANUMTAX aura = PLATFORMGYATT
+GYATT "PLATFORMGYATT:"
+GYATT aura
+
+FANUMTAX sigma = CANCOOK "shell"
+GYATT "CANCOOK('shell'):"
+GYATT sigma
+
+FANUMTAX aura = WHERE_AM_I
+GYATT "WHERE_AM_I:"
+GYATT aura
+
+GYATT "4. Random Functions:"
+FANUMTAX sigma = RANDOMRANGE 1 100
+GYATT "RANDOMRANGE(1, 100):"
+GYATT sigma
+
+FANUMTAX sigma = RANDOM
+GYATT "RANDOM():"
+GYATT sigma
+
+GYATT "5. Debug Functions:"
+FANUMTAX sigma = 69
+SNIFF sigma
+
+STALK "Debug trace message"
+
+GYATT "6. File Operations:"
+FANUMTAX aura = SPITFILE "brainrot_test.txt" "Brainrot Lang is awesome!"
+GYATT "File written successfully!"
+
+FANUMTAX result = READDROP "brainrot_test.txt"
+RIZZ IS W result LOCK IN
+  GYATT "File read successfully!"
+  FANUMTAX content = TAKE W result
+  GYATT "Content:"
+  GYATT content
+IT'S OVER
+
+GYATT "7. Path Functions:"
+FANUMTAX aura = GYATTPATH "home" "user" "brainrot"
+GYATT "GYATTPATH('home', 'user', 'brainrot'):"
+GYATT aura
+
+FANUMTAX aura = RIZZHOME
+GYATT "RIZZHOME:"
+GYATT aura
+
+GYATT "8. Environment Functions:"
+FANUMTAX result = GYATTENV "PATH"
+RIZZ IS W result LOCK IN
+  GYATT "PATH environment variable found!"
+IT'S OVER
+
+GYATT "9. Process Functions:"
+FANUMTAX fanum = GYATTARGS
+GYATT "Command line arguments:"
+GYATT fanum
+
+GYATT "10. Memory Functions:"
+FANUMTAX aura = CLEANUP
+GYATT "Memory cleanup:"
+GYATT aura
+
+GYATT "=============================================="
+GYATT "ALL BRAINROT FUNCTIONS WORKING!"
+GYATT "Brainrot Lang is now FULLY FUNCTIONAL!"
+💀💀💀

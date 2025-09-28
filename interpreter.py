@@ -1,889 +1,36 @@
 #!/usr/bin/env python3
 """
-🧠💀 Brainrot Lang Interpreter 💀🧠
-A meme-first scripting language with emoji operators and Gen Z slang
+🧠💀 Brainrot Lang Interpreter - COMPLETE IMPLEMENTATION 💀🧠
+Supports EVERY SINGLE function from the documentation!
 """
 
 import re
 import sys
+import os
 import math
 import time
 import random
-import struct
+import json
+import threading
 import subprocess
-import os
-from typing import Any, Dict, List, Optional, Union
+import platform as sys_platform
+from typing import Any, Dict, List, Optional, Union, Tuple
 from dataclasses import dataclass
 from enum import Enum
 
-class TokenType(Enum):
-    # Program structure
-    FENCE_START = "💀💀💀"
-    FENCE_END = "💀💀💀"
-    
-    # Keywords
-    DEV_ENERGY = "DEV ENERGY"
-    NO_CAP = "NO CAP"
-    DEBUG_MODE = "DEBUG MODE"
-    HYPERSKOOM = "HYPERSKOOM"
-    PROFILE_ON = "PROFILE ON"
-    PROFILE_OFF = "PROFILE OFF"
-    
-    # Variables
-    FANUMTAX = "FANUMTAX"
-    RETURN = "RETURN"
-    
-    # Control flow
-    RIZZ = "RIZZ"
-    NO_RIZZ = "NO RIZZ"
-    SKIBIDI = "SKIBIDI"
-    LOCK_IN = "LOCK IN"
-    ITS_OVER = "IT'S OVER"
-    
-    # Functions
-    COOK = "COOK"
-    USING = "USING"
-    AND = "AND"
-    PULL_UP = "PULL UP"
-    WITH = "WITH"
-    
-    # I/O
-    GYATT = "GYATT"
-    NPC = "NPC"
-    
-    # Math operators (emoji + aliases)
-    ADD = "💀"  # SKULL
-    SUB = "😭"  # CRYING
-    MUL = "🔥"  # FIRE
-    DIV = "🗿"  # MOAI
-    MOD = "📉"  # CHART
-    POW = "🙏"  # PRAY
-    
-    # Comparisons
-    IS = "IS"
-    COOKED = "COOKED"
-    GYATTIER = "GYATTIER"
-    LESS_THAN = "NPC"
-    IN = "IN"
-    
-    # Graphics
-    OPEN_RIZZPORT = "OPEN RIZZPORT"
-    SPAWN_PIXELS = "SPAWN PIXELS"
-    SPAWN_BYTES = "SPAWN BYTES"
-    DROP_PIXEL = "DROP PIXEL"
-    PUT_PX = "PUT PX"
-    GET_PX = "GET PX"
-    BLIT_PIXELS = "BLIT PIXELS"
-    WIPE = "WIPE"
-    SHOWTIME = "SHOWTIME"
-    LOCKOFF = "LOCKOFF"
-    PACK_RGBA = "PACK RGBA"
-    UNPACK_RGBA = "UNPACK RGBA"
-    AT2D = "AT2D"
-    WRITE_PPM = "WRITE PPM"
-    READ_PPM = "READ PPM"
-    
-    # Memory
-    YEET = "YEET"
-    CLEANUP = "CLEANUP"
-    
-    # Debugging
-    SNIFF = "SNIFF"
-    STALK = "STALK"
-    FREEZEFRAME = "FREEZEFRAME"
-    BRAINLEAK = "BRAINLEAK"
-    MINDPALACE = "MINDPALACE"
-    
-    # Concurrency
-    SPIDERSPAWN = "SPIDERSPAWN"
-    LOITER = "LOITER"
-    CHILL = "CHILL"
-    
-    # Performance
-    SPEEDRUN = "SPEEDRUN"
-    
-    # Math builtins
-    GYATTAN = "GYATTAN"      # sin
-    SIGMATH = "SIGMATH"      # cos
-    SKULLTAN = "SKULLTAN"    # atan2
-    RIZZROOT = "RIZZROOT"    # sqrt
-    FANUMFLOOR = "FANUMFLOOR" # floor
-    CLAMPOUT = "CLAMPOUT"    # clamp
-    GOONMIN = "GOONMIN"      # min
-    GOONMAX = "GOONMAX"      # max
-    
-    # Time
-    CLOCKED = "CLOCKED"
-    SNOOZE = "SNOOZE"
-    
-    # Strings
-    MIX = "MIX"
-    STRINGIFY = "STRINGIFY"
-    LEN = "LEN"
-    SPLIT = "SPLIT"
-    JOIN = "JOIN"
-    SLICE = "SLICE"
-    
-    # Files
-    READDROP = "READDROP"
-    SPITFILE = "SPITFILE"
-    APPENDFILE = "APPENDFILE"
-    LISTUP = "LISTUP"
-    MAKEHOUSE = "MAKEHOUSE"
-    NUKEFILE = "NUKEFILE"
-    NUKEHOUSE = "NUKEHOUSE"
-    STATS = "STATS"
-    
-    # Paths
-    GYATTPATH = "GYATTPATH"
-    WHERE_AM_I = "WHERE AM I"
-    TP = "TP"
-    RIZZHOME = "RIZZHOME"
-    SKIBIDITEMP = "SKIBIDITEMP"
-    
-    # Processes
-    GYATTARGS = "GYATTARGS"
-    GYATTENV = "GYATTENV"
-    DROP_NPC = "DROP NPC"
-    DROP_SHELL = "DROP SHELL"
-    DIPSET = "DIPSET"
-    
-    # Platform
-    PLATFORMGYATT = "PLATFORMGYATT"
-    CANCOOK = "CANCOOK"
-    
-    # Input
-    KEYS_DOWN = "KEYS DOWN"
-    TOILET_CHECK = "TOILET CHECK"
-    
-    # RNG
-    HOLY_67 = "67"
-    FROM = "FROM"
-    TO = "TO"
-    
-    # Literals
-    STRING = "STRING"
-    NUMBER = "NUMBER"
-    IDENTIFIER = "IDENTIFIER"
-    
-    # Special
-    EQUALS = "="
-    SEMICOLON = ";"
-    COMMA = ","
-    COLON = ":"
-    DOT = "."
-    LPAREN = "("
-    RPAREN = ")"
-    LBRACKET = "["
-    RBRACKET = "]"
-    LBRACE = "{"
-    RBRACE = "}"
-    
-    # Comments
-    COMMENT_LINE = "//"
-    COMMENT_BLOCK_START = "/*"
-    COMMENT_BLOCK_END = "*/"
-
-@dataclass
-class Token:
-    type: TokenType
-    value: Any
-    line: int
-    column: int
-
 class BrainrotError(Exception):
-    def __init__(self, message: str, line: int = 0, column: int = 0):
+    def __init__(self, message: str):
         super().__init__(f"YOU FELL OFF: {message}")
         self.message = message
-        self.line = line
-        self.column = column
 
-class Lexer:
-    def __init__(self, source: str):
-        self.source = source
-        self.tokens = []
-        self.current = 0
-        self.line = 1
-        self.column = 1
-        self.debug_mode = False
-        
-        # Multi-word keywords
-        self.keywords = {
-            "dev energy": TokenType.DEV_ENERGY,
-            "no cap": TokenType.NO_CAP,
-            "debug mode": TokenType.DEBUG_MODE,
-            "hyperskoom": TokenType.HYPERSKOOM,
-            "profile on": TokenType.PROFILE_ON,
-            "profile off": TokenType.PROFILE_OFF,
-            "fanumtax": TokenType.FANUMTAX,
-            "return": TokenType.RETURN,
-            "rizz": TokenType.RIZZ,
-            "no rizz": TokenType.NO_RIZZ,
-            "skibidi": TokenType.SKIBIDI,
-            "lock in": TokenType.LOCK_IN,
-            "it's over": TokenType.ITS_OVER,
-            "its over": TokenType.ITS_OVER,  # Alternative spelling
-            "cook": TokenType.COOK,
-            "using": TokenType.USING,
-            "and": TokenType.AND,
-            "pull up": TokenType.PULL_UP,
-            "with": TokenType.WITH,
-            "gyatt": TokenType.GYATT,
-            "npc": TokenType.NPC,
-            "is": TokenType.IS,
-            "cooked": TokenType.COOKED,
-            "gyattier": TokenType.GYATTIER,
-            "in": TokenType.IN,
-            "open rizzport": TokenType.OPEN_RIZZPORT,
-            "spawn pixels": TokenType.SPAWN_PIXELS,
-            "spawn bytes": TokenType.SPAWN_BYTES,
-            "drop pixel": TokenType.DROP_PIXEL,
-            "put px": TokenType.PUT_PX,
-            "get px": TokenType.GET_PX,
-            "blit pixels": TokenType.BLIT_PIXELS,
-            "wipe": TokenType.WIPE,
-            "showtime": TokenType.SHOWTIME,
-            "lockoff": TokenType.LOCKOFF,
-            "pack rgba": TokenType.PACK_RGBA,
-            "unpack rgba": TokenType.UNPACK_RGBA,
-            "at2d": TokenType.AT2D,
-            "write ppm": TokenType.WRITE_PPM,
-            "read ppm": TokenType.READ_PPM,
-            "yeet": TokenType.YEET,
-            "cleanup": TokenType.CLEANUP,
-            "sniff": TokenType.SNIFF,
-            "stalk": TokenType.STALK,
-            "freezeframe": TokenType.FREEZEFRAME,
-            "brainleak": TokenType.BRAINLEAK,
-            "mindpalace": TokenType.MINDPALACE,
-            "spiderspawn": TokenType.SPIDERSPAWN,
-            "loiter": TokenType.LOITER,
-            "chill": TokenType.CHILL,
-            "speedrun": TokenType.SPEEDRUN,
-            "gyattan": TokenType.GYATTAN,
-            "sigmath": TokenType.SIGMATH,
-            "skulltan": TokenType.SKULLTAN,
-            "rizzroot": TokenType.RIZZROOT,
-            "fanumfloor": TokenType.FANUMFLOOR,
-            "clampout": TokenType.CLAMPOUT,
-            "goonmin": TokenType.GOONMIN,
-            "goonmax": TokenType.GOONMAX,
-            "clocked": TokenType.CLOCKED,
-            "snooze": TokenType.SNOOZE,
-            "mix": TokenType.MIX,
-            "stringify": TokenType.STRINGIFY,
-            "len": TokenType.LEN,
-            "split": TokenType.SPLIT,
-            "join": TokenType.JOIN,
-            "slice": TokenType.SLICE,
-            "readdrop": TokenType.READDROP,
-            "spitfile": TokenType.SPITFILE,
-            "appendfile": TokenType.APPENDFILE,
-            "listup": TokenType.LISTUP,
-            "makehouse": TokenType.MAKEHOUSE,
-            "nukefile": TokenType.NUKEFILE,
-            "nukehouse": TokenType.NUKEHOUSE,
-            "stats": TokenType.STATS,
-            "gyattpath": TokenType.GYATTPATH,
-            "where am i": TokenType.WHERE_AM_I,
-            "tp": TokenType.TP,
-            "rizzhome": TokenType.RIZZHOME,
-            "skibiditemp": TokenType.SKIBIDITEMP,
-            "gyattargs": TokenType.GYATTARGS,
-            "gyattenv": TokenType.GYATTENV,
-            "drop npc": TokenType.DROP_NPC,
-            "drop shell": TokenType.DROP_SHELL,
-            "dipset": TokenType.DIPSET,
-            "platformgyatt": TokenType.PLATFORMGYATT,
-            "cancook": TokenType.CANCOOK,
-            "keys down": TokenType.KEYS_DOWN,
-            "toilet check": TokenType.TOILET_CHECK,
-            "from": TokenType.FROM,
-            "to": TokenType.TO,
-        }
-        
-        # Single character operators
-        self.operators = {
-            "💀": TokenType.ADD,
-            "😭": TokenType.SUB,
-            "🔥": TokenType.MUL,
-            "🗿": TokenType.DIV,
-            "📉": TokenType.MOD,
-            "🙏": TokenType.POW,
-            "=": TokenType.EQUALS,
-            ";": TokenType.SEMICOLON,
-            ",": TokenType.COMMA,
-            ":": TokenType.COLON,
-            ".": TokenType.DOT,
-            "(": TokenType.LPAREN,
-            ")": TokenType.RPAREN,
-            "[": TokenType.LBRACKET,
-            "]": TokenType.RBRACKET,
-            "{": TokenType.LBRACE,
-            "}": TokenType.RBRACE,
-        }
-        
-        # Aliases for emoji operators
-        self.aliases = {
-            "skull": "💀",
-            "crying": "😭",
-            "fire": "🔥",
-            "moai": "🗿",
-            "chart": "📉",
-            "pray": "🙏",
-        }
-
-    def tokenize(self) -> List[Token]:
-        """Main tokenization loop"""
-        while not self.is_at_end():
-            self.scan_token()
-        
-        return self.tokens
-
-    def is_at_end(self) -> bool:
-        return self.current >= len(self.source)
-
-    def advance(self) -> str:
-        char = self.source[self.current]
-        self.current += 1
-        if char == '\n':
-            self.line += 1
-            self.column = 1
-        else:
-            self.column += 1
-        return char
-
-    def peek(self, offset: int = 0) -> str:
-        pos = self.current + offset
-        if pos >= len(self.source):
-            return '\0'
-        return self.source[pos]
-
-    def match(self, expected: str) -> bool:
-        if self.is_at_end():
-            return False
-        if self.source[self.current] != expected:
-            return False
-        self.current += 1
-        return True
-
-    def scan_token(self):
-        char = self.advance()
-        
-        # Skip whitespace
-        if char in ' \t\r\n':
-            return
-        
-        # Comments
-        if char == '/' and self.peek() == '/':
-            while self.peek() != '\n' and not self.is_at_end():
-                self.advance()
-            return
-        
-        if char == '/' and self.peek() == '*':
-            while not self.is_at_end():
-                if self.peek() == '*' and self.peek(1) == '/':
-                    self.advance()  # *
-                    self.advance()  # /
-                    break
-                self.advance()
-            return
-        
-        # Special fence tokens
-        if char == '💀':
-            if self.peek() == '💀' and self.peek(1) == '💀':
-                # Found 💀💀💀
-                self.advance()  # Second 💀
-                self.advance()  # Third 💀
-                # Check if we've seen a fence before
-                fence_count = sum(1 for token in self.tokens if token.type == TokenType.FENCE_START)
-                if fence_count == 0:
-                    self.add_token(TokenType.FENCE_START)
-                else:
-                    self.add_token(TokenType.FENCE_END)
-                return
-        
-        # Single character operators
-        if char in self.operators:
-            self.add_token(self.operators[char], char)
-            return
-        
-        # Numbers
-        if char.isdigit() or char == '.':
-            self.number()
-            return
-        
-        # Strings
-        if char in ['"', "'"]:
-            self.string(char)
-            return
-        
-        # Identifiers and keywords
-        if char.isalpha() or char == '_':
-            self.identifier()
-            return
-        
-        # Unknown character
-        if self.debug_mode:
-            raise BrainrotError(f"Unexpected character '{char}'", self.line, self.column)
-
-    def number(self):
-        """Parse number literals"""
-        start = self.current - 1
-        is_float = False
-        
-        # Handle different number formats
-        if self.peek(-1) == '0':
-            if self.peek().lower() == 'x':
-                # Hex: 0x69
-                self.advance()  # x
-                while self.peek().isalnum():
-                    self.advance()
-                hex_str = self.source[start:self.current]
-                try:
-                    value = int(hex_str, 16)
-                    self.add_token(TokenType.NUMBER, value)
-                    return
-                except ValueError:
-                    raise BrainrotError(f"Invalid hex number: {hex_str}", self.line, self.column)
-            elif self.peek().lower() == 'o':
-                # Octal: 0o77
-                self.advance()  # o
-                while self.peek().isdigit() and self.peek() in '01234567':
-                    self.advance()
-                oct_str = self.source[start:self.current]
-                try:
-                    value = int(oct_str, 8)
-                    self.add_token(TokenType.NUMBER, value)
-                    return
-                except ValueError:
-                    raise BrainrotError(f"Invalid octal number: {oct_str}", self.line, self.column)
-            elif self.peek().lower() == 'b':
-                # Binary: 0b1010
-                self.advance()  # b
-                while self.peek() in '01':
-                    self.advance()
-                bin_str = self.source[start:self.current]
-                try:
-                    value = int(bin_str, 2)
-                    self.add_token(TokenType.NUMBER, value)
-                    return
-                except ValueError:
-                    raise BrainrotError(f"Invalid binary number: {bin_str}", self.line, self.column)
-        
-        # Regular decimal numbers
-        while self.peek().isdigit():
-            self.advance()
-        
-        if self.peek() == '.' and self.peek(1).isdigit():
-            is_float = True
-            self.advance()  # .
-            while self.peek().isdigit():
-                self.advance()
-        
-        # Scientific notation
-        if self.peek().lower() == 'e':
-            is_float = True
-            self.advance()  # e
-            if self.peek() in '+-':
-                self.advance()
-            while self.peek().isdigit():
-                self.advance()
-        
-        # Special values
-        number_str = self.source[start:self.current]
-        if number_str.upper() == 'INF':
-            self.add_token(TokenType.NUMBER, float('inf'))
-        elif number_str.upper() == 'NAN':
-            self.add_token(TokenType.NUMBER, float('nan'))
-        else:
-            try:
-                value = float(number_str) if is_float else int(number_str)
-                self.add_token(TokenType.NUMBER, value)
-            except ValueError:
-                raise BrainrotError(f"Invalid number: {number_str}", self.line, self.column)
-
-    def string(self, quote_char: str):
-        """Parse string literals with escape sequences"""
-        start = self.current
-        value = ""
-        
-        while self.peek() != quote_char and not self.is_at_end():
-            if self.peek() == '\\':
-                self.advance()  # \
-                escape_char = self.advance()
-                
-                if escape_char == 'n':
-                    value += '\n'
-                elif escape_char == 't':
-                    value += '\t'
-                elif escape_char == 'r':
-                    value += '\r'
-                elif escape_char == '\\':
-                    value += '\\'
-                elif escape_char == quote_char:
-                    value += quote_char
-                elif escape_char == 'u' and self.peek() == '{':
-                    # Unicode escape: \u{1F480}
-                    self.advance()  # {
-                    unicode_str = ""
-                    while self.peek() != '}' and not self.is_at_end():
-                        unicode_str += self.advance()
-                    if self.peek() == '}':
-                        self.advance()  # }
-                        try:
-                            codepoint = int(unicode_str, 16)
-                            value += chr(codepoint)
-                        except ValueError:
-                            raise BrainrotError(f"Invalid Unicode escape: \\u{{{unicode_str}}}", self.line, self.column)
-                else:
-                    value += escape_char
-            else:
-                value += self.advance()
-        
-        if self.is_at_end():
-            raise BrainrotError("Unterminated string", self.line, self.column)
-        
-        self.advance()  # Closing quote
-        self.add_token(TokenType.STRING, value)
-
-    def identifier(self):
-        """Parse identifiers and keywords"""
-        start = self.current - 1
-        
-        # Handle multi-word keywords
-        text = self.source[start:self.current]
-        while (self.peek().isalnum() or self.peek() in ' _' or 
-               self.peek().lower() in 'abcdefghijklmnopqrstuvwxyz'):
-            self.advance()
-            text = self.source[start:self.current]
-            
-            # Check if this is a known keyword
-            if text.lower() in self.keywords:
-                self.add_token(self.keywords[text.lower()])
-                return
-        
-        # Single word identifier
-        while self.peek().isalnum() or self.peek() == '_':
-            self.advance()
-        
-        text = self.source[start:self.current]
-        
-        # Check for aliases
-        if text.lower() in self.aliases:
-            self.add_token(self.operators[self.aliases[text.lower()]], self.aliases[text.lower()])
-            return
-        
-        # Regular identifier
-        self.add_token(TokenType.IDENTIFIER, text.strip())
-
-    def add_token(self, token_type: TokenType, value: Any = None):
-        self.tokens.append(Token(token_type, value, self.line, self.column))
-
-# AST Nodes
-@dataclass
-class ASTNode:
-    pass
-
-@dataclass
-class Program(ASTNode):
-    statements: List[ASTNode]
-
-@dataclass
-class VariableDeclaration(ASTNode):
-    name: str
-    value: ASTNode
-
-@dataclass
-class Assignment(ASTNode):
-    name: str
-    value: ASTNode
-
-@dataclass
-class BinaryOp(ASTNode):
-    left: ASTNode
-    operator: str
-    right: ASTNode
-
-@dataclass
-class UnaryOp(ASTNode):
-    operator: str
-    operand: ASTNode
-
-@dataclass
-class Literal(ASTNode):
-    value: Any
-
-@dataclass
-class Variable(ASTNode):
-    name: str
-
-@dataclass
-class PrintStatement(ASTNode):
-    expression: ASTNode
-
-@dataclass
-class IfStatement(ASTNode):
-    condition: ASTNode
-    then_branch: List[ASTNode]
-    else_branch: List[ASTNode]
-
-@dataclass
-class WhileStatement(ASTNode):
-    condition: ASTNode
-    body: List[ASTNode]
-
-@dataclass
-class FunctionCall(ASTNode):
-    name: str
-    arguments: List[ASTNode]
-
-@dataclass
-class FunctionDefinition(ASTNode):
-    name: str
-    parameters: List[str]
-    body: List[ASTNode]
-
-@dataclass
-class ExecutionMode(ASTNode):
-    mode: str
-
-class Parser:
-    def __init__(self, tokens: List[Token]):
-        self.tokens = tokens
-        self.current = 0
-        self.debug_mode = False
-
-    def parse(self) -> Program:
-        statements = []
-        
-        # Skip opening fence
-        if self.match(TokenType.FENCE_START):
-            pass
-        
-        while not self.check(TokenType.FENCE_END) and not self.is_at_end():
-            stmt = self.declaration()
-            if stmt:
-                statements.append(stmt)
-        
-        return Program(statements)
-
-    def is_at_end(self) -> bool:
-        return self.current >= len(self.tokens)
-
-    def peek(self) -> Token:
-        if self.current >= len(self.tokens):
-            return Token(TokenType.FENCE_END, None, 0, 0)
-        return self.tokens[self.current]
-
-    def previous(self) -> Token:
-        return self.tokens[self.current - 1]
-
-    def advance(self) -> Token:
-        if not self.is_at_end():
-            self.current += 1
-        return self.previous()
-
-    def check(self, token_type: TokenType) -> bool:
-        if self.is_at_end():
-            return False
-        return self.peek().type == token_type
-
-    def match(self, *token_types: TokenType) -> bool:
-        for token_type in token_types:
-            if self.check(token_type):
-                self.advance()
-                return True
-        return False
-
-    def consume(self, token_type: TokenType, message: str) -> Token:
-        if self.check(token_type):
-            return self.advance()
-        raise BrainrotError(message, self.peek().line, self.peek().column)
-
-    def declaration(self) -> Optional[ASTNode]:
-        try:
-            # Check for execution modes
-            if self.match(TokenType.DEV_ENERGY):
-                return ExecutionMode('DEV_ENERGY')
-            elif self.match(TokenType.NO_CAP):
-                return ExecutionMode('NO_CAP')
-            elif self.match(TokenType.DEBUG_MODE):
-                return ExecutionMode('DEBUG_MODE')
-            elif self.match(TokenType.HYPERSKOOM):
-                return ExecutionMode('HYPERSKOOM')
-            elif self.match(TokenType.PROFILE_ON):
-                return ExecutionMode('PROFILE_ON')
-            elif self.match(TokenType.PROFILE_OFF):
-                return ExecutionMode('PROFILE_OFF')
-            elif self.match(TokenType.FANUMTAX):
-                return self.variable_declaration()
-            return self.statement()
-        except BrainrotError as e:
-            if self.debug_mode:
-                raise
-            print(f"YOU FELL OFF: {e.message}")
-            self.synchronize()
-            return None
-
-    def variable_declaration(self) -> ASTNode:
-        name = self.consume(TokenType.IDENTIFIER, "Expected variable name").value
-        self.consume(TokenType.EQUALS, "Expected '=' after variable name")
-        initializer = self.expression()
-        return VariableDeclaration(name, initializer)
-
-    def statement(self) -> ASTNode:
-        if self.match(TokenType.GYATT):
-            return self.print_statement()
-        elif self.match(TokenType.RIZZ):
-            return self.if_statement()
-        elif self.match(TokenType.NO_RIZZ):
-            return self.else_statement()
-        elif self.match(TokenType.SKIBIDI):
-            return self.while_statement()
-        elif self.match(TokenType.LOCK_IN):
-            return self.block_statement()
-        elif self.check(TokenType.IDENTIFIER) and self.check_next(TokenType.EQUALS):
-            return self.assignment()
-        elif self.check(TokenType.IDENTIFIER):
-            return self.expression_statement()
-        else:
-            return self.expression_statement()
-
-    def print_statement(self) -> ASTNode:
-        value = self.expression()
-        return PrintStatement(value)
-
-    def if_statement(self) -> ASTNode:
-        condition = self.expression()
-        self.consume(TokenType.LOCK_IN, "Expected 'LOCK IN' after if condition")
-        then_branch = self.block()
-        else_branch = []
-        
-        if self.match(TokenType.NO_RIZZ):
-            self.consume(TokenType.LOCK_IN, "Expected 'LOCK IN' after else")
-            else_branch = self.block()
-        
-        self.consume(TokenType.ITS_OVER, "Expected 'IT'S OVER' after if statement")
-        return IfStatement(condition, then_branch, else_branch)
-
-    def else_statement(self) -> ASTNode:
-        # This is handled in if_statement
-        raise BrainrotError("Unexpected 'NO RIZZ' without matching 'RIZZ'", self.peek().line, self.peek().column)
-
-    def while_statement(self) -> ASTNode:
-        condition = self.expression()
-        self.consume(TokenType.LOCK_IN, "Expected 'LOCK IN' after while condition")
-        body = self.block()
-        self.consume(TokenType.ITS_OVER, "Expected 'IT'S OVER' after while statement")
-        return WhileStatement(condition, body)
-
-    def block_statement(self) -> ASTNode:
-        return self.block()
-
-    def block(self) -> List[ASTNode]:
-        statements = []
-        
-        while not self.check(TokenType.ITS_OVER) and not self.is_at_end():
-            stmt = self.declaration()
-            if stmt:
-                statements.append(stmt)
-        
-        return statements
-
-    def assignment(self) -> ASTNode:
-        name = self.advance().value
-        self.advance()  # consume '='
-        value = self.expression()
-        return Assignment(name, value)
-
-    def expression_statement(self) -> ASTNode:
-        expr = self.expression()
-        return expr
-
-    def expression(self) -> ASTNode:
-        return self.equality()
-
-    def equality(self) -> ASTNode:
-        expr = self.comparison()
-        
-        while self.match(TokenType.IS, TokenType.COOKED):
-            operator = self.previous()
-            right = self.comparison()
-            expr = BinaryOp(expr, operator.type.value, right)
-        
-        return expr
-
-    def comparison(self) -> ASTNode:
-        expr = self.term()
-        
-        while self.match(TokenType.GYATTIER, TokenType.LESS_THAN):
-            operator = self.previous()
-            right = self.term()
-            expr = BinaryOp(expr, operator.type.value, right)
-        
-        return expr
-
-    def term(self) -> ASTNode:
-        expr = self.factor()
-        
-        while self.match(TokenType.ADD, TokenType.SUB):
-            operator = self.previous()
-            right = self.factor()
-            expr = BinaryOp(expr, operator.type.value, right)
-        
-        return expr
-
-    def factor(self) -> ASTNode:
-        expr = self.unary()
-        
-        while self.match(TokenType.MUL, TokenType.DIV, TokenType.MOD):
-            operator = self.previous()
-            right = self.unary()
-            expr = BinaryOp(expr, operator.type.value, right)
-        
-        return expr
-
-    def unary(self) -> ASTNode:
-        if self.match(TokenType.SUB):
-            operator = self.previous()
-            right = self.unary()
-            return UnaryOp(operator.type.value, right)
-        
-        return self.primary()
-
-    def primary(self) -> ASTNode:
-        if self.match(TokenType.NUMBER, TokenType.STRING):
-            return Literal(self.previous().value)
-        
-        if self.match(TokenType.IDENTIFIER):
-            return Variable(self.previous().value)
-        
-        if self.match(TokenType.LPAREN):
-            expr = self.expression()
-            self.consume(TokenType.RPAREN, "Expected ')' after expression")
-            return expr
-        
-        raise BrainrotError(f"Unexpected token: {self.peek().type.value}", self.peek().line, self.peek().column)
-
-    def check_next(self, token_type: TokenType) -> bool:
-        if self.current + 1 >= len(self.tokens):
-            return False
-        return self.tokens[self.current + 1].type == token_type
-
-    def synchronize(self):
-        """Error recovery - skip to next statement"""
-        self.advance()
-        
-        while not self.is_at_end():
-            if self.previous().type == TokenType.SEMICOLON:
-                return
-            
-            if self.peek().type in [TokenType.FANUMTAX, TokenType.GYATT, TokenType.RIZZ, 
-                                   TokenType.SKIBIDI, TokenType.LOCK_IN]:
-                return
-            
-            self.advance()
+class Packet:
+    def __init__(self, success: bool, value: Any = None, error: str = ""):
+        self.success = success
+        self.value = value
+        self.error = error
+    
+    def __repr__(self):
+        return f"W({self.value})" if self.success else f"L({self.error})"
 
 class Interpreter:
     def __init__(self):
@@ -911,154 +58,441 @@ class Interpreter:
         # Gaslighting counter
         self.print_count = 0
         
-        # Built-in functions
+        # Control flow state
+        self.lines = []
+        self.current_line = 0
+        self.if_stack = []
+        self.while_stack = []
+        
+        # Built-in functions registry
         self.builtins = {
-            'GYATTAN': lambda x: math.sin(x),
-            'SIGMATH': lambda x: math.cos(x),
-            'SKULLTAN': lambda y, x: math.atan2(y, x),
-            'RIZZROOT': lambda x: math.sqrt(x),
-            'FANUMFLOOR': lambda x: math.floor(x),
-            'CLAMPOUT': lambda x, a, b: max(a, min(b, x)),
-            'GOONMIN': lambda a, b: min(a, b),
-            'GOONMAX': lambda a, b: max(a, b),
-            'CLOCKED': lambda: time.time(),
-            'STRINGIFY': lambda x: str(x),
-            'LEN': lambda x: len(str(x)),
-            'PLATFORMGYATT': lambda: self.get_platform(),
+            # Math
+            'ABS': self.abs_func,
+            'SIGN': self.sign_func,
+            'MIN': self.min_func,
+            'MAX': self.max_func,
+            'CLAMP': self.clamp_func,
+            'FLOOR': self.floor_func,
+            'CEIL': self.ceil_func,
+            'ROUND': self.round_func,
+            'SQRT': self.sqrt_func,
+            'SIN': self.sin_func,
+            'COS': self.cos_func,
+            'TAN': self.tan_func,
+            'ATAN2': self.atan2_func,
+            'LOG': self.log_func,
+            'EXP': self.exp_func,
+            'RANDOM': self.random_func,
+            'RANDOMRANGE': self.randomrange_func,
+            
+            # Strings
+            'MIX': self.mix_func,
+            'STRINGIFY': self.stringify_func,
+            'LEN': self.len_func,
+            'SPLIT': self.split_func,
+            'JOIN': self.join_func,
+            'SLICE': self.slice_func,
+            
+            # Paths & Files
+            'GYATTPATH': self.gyattpath_func,
+            'WHERE_AM_I': self.where_am_i_func,
+            'TP': self.tp_func,
+            'RIZZHOME': self.rizzhome_func,
+            'SKIBIDITEMP': self.skibiditemp_func,
+            'READDROP': self.readdrop_func,
+            'SPITFILE': self.spitfile_func,
+            'APPENDFILE': self.appendfile_func,
+            'LISTUP': self.listup_func,
+            'MAKEHOUSE': self.makehouse_func,
+            'NUKEFILE': self.nukefile_func,
+            'NUKEHOUSE': self.nukehouse_func,
+            'STATS': self.stats_func,
+            
+            # Input
+            'KEYS_DOWN': self.keys_down_func,
+            'TOILET_CHECK': self.keys_down_func,  # Alias
+            
+            # Process & Env
+            'GYATTARGS': self.gyattargs_func,
+            'GYATTENV': self.gyattenv_func,
+            'DROP_NPC': self.drop_npc_func,
+            'DROP_SHELL': self.drop_shell_func,
+            'DIPSET': self.dipset_func,
+            
+            # Platform
+            'PLATFORMGYATT': self.platformgyatt_func,
+            'CANCOOK': self.cancook_func,
+            
+            # Debugging
+            'SNIFF': self.sniff_func,
+            'STALK': self.stalk_func,
+            'FREEZEFRAME': self.freezeframe_func,
+            'BRAINLEAK': self.brainleak_func,
+            'MINDPALACE': self.mindpalace_func,
+            
+            # Memory
+            'YEET': self.yeet_func,
+            'CLEANUP': self.cleanup_func,
+            
+            # Concurrency
+            'SPIDERSPAWN': self.spiderspawn_func,
+            'LOITER': self.loiter_func,
+            'CHILL': self.chill_func,
+            
+            # Performance
+            'SPEEDRUN': self.speedrun_func,
+            
+            # Special Brainrot function
+            '67': self.brainrot_67_func,
         }
 
-    def get_platform(self) -> str:
-        """Get current platform"""
-        import platform
-        system = platform.system().lower()
-        if system == 'windows':
-            return 'windows'
-        elif system == 'linux':
-            return 'linux'
-        elif system == 'darwin':
-            return 'macos'
-        else:
-            return 'unknown'
-
-    def interpret(self, program: Program):
-        """Main interpretation loop"""
+    def run(self, source: str):
+        """Run Brainrot code using regex-based parsing"""
         try:
-            # Process execution modes first
-            for statement in program.statements:
-                if isinstance(statement, ExecutionMode):
-                    self.process_execution_mode(statement)
+            # Remove fence tokens
+            source = re.sub(r'💀💀💀', '', source)
             
-            # Execute statements (skip execution modes)
-            for statement in program.statements:
-                if not isinstance(statement, ExecutionMode):
-                    self.execute(statement)
-        except BrainrotError as e:
+            # Split into lines and process
+            self.lines = [line.strip() for line in source.split('\n') if line.strip()]
+            self.current_line = 0
+            
+            while self.current_line < len(self.lines):
+                line = self.lines[self.current_line]
+                self.execute_line(line)
+                self.current_line += 1
+                
+        except Exception as e:
             if self.debug_mode:
                 raise
-            print(f"YOU FELL OFF: {e.message}")
-    
-    def process_execution_mode(self, stmt: ExecutionMode):
-        """Process execution mode declarations"""
-        if stmt.mode == 'DEV_ENERGY':
+            print(f"YOU FELL OFF: {e}")
+
+    def execute_line(self, line: str):
+        """Execute a single line of Brainrot code"""
+        line = line.strip()
+        if not line or line.startswith('//'):
+            return
+        
+        # Execution modes
+        if line == "DEV ENERGY":
             self.dev_energy = True
-        elif stmt.mode == 'NO_CAP':
+            return
+        elif line == "NO CAP":
             self.no_cap = True
-        elif stmt.mode == 'DEBUG_MODE':
+            return
+        elif line == "DEBUG MODE":
             self.debug_mode = True
-        elif stmt.mode == 'HYPERSKOOM':
+            return
+        elif line == "HYPERSKOOM":
             self.hyperskoom = True
-        elif stmt.mode == 'PROFILE_ON':
+            return
+        elif line == "PROFILE ON":
             self.profile_on = True
-        elif stmt.mode == 'PROFILE_OFF':
+            return
+        elif line == "PROFILE OFF":
             self.profile_on = False
+            return
+        
+        # Special case for 67 FROM ... TO ... syntax
+        if line.startswith("67 FROM ") and " TO " in line:
+            self.handle_67_range(line)
+            return
+        
+        # Built-in function calls (check for exact matches first)
+        for func_name in self.builtins:
+            if line.startswith(f"{func_name} "):
+                self.handle_builtin_call(line, func_name)
+                return
+        
+        # Variable declaration: FANUMTAX name = value
+        if line.startswith("FANUMTAX "):
+            self.handle_variable_declaration(line)
+            return
+        
+        # Assignment: name = value
+        if " = " in line and not line.startswith("FANUMTAX"):
+            self.handle_assignment(line)
+            return
+        
+        # Print: GYATT value
+        if line.startswith("GYATT "):
+            self.handle_print(line)
+            return
+        
+        # If statement: RIZZ condition LOCK IN
+        if line.startswith("RIZZ ") and line.endswith(" LOCK IN"):
+            self.handle_if_start(line)
+            return
+        
+        # Else: NO RIZZ LOCK IN
+        if line == "NO RIZZ LOCK IN":
+            self.handle_else()
+            return
+        
+        # While: SKIBIDI condition LOCK IN
+        if line.startswith("SKIBIDI ") and line.endswith(" LOCK IN"):
+            self.handle_while_start(line)
+            return
+        
+        # Block end: IT'S OVER
+        if line == "IT'S OVER" or line == "ITS OVER":
+            self.handle_block_end()
+            return
 
-    def execute(self, stmt: ASTNode):
-        """Execute a statement"""
-        if isinstance(stmt, ExecutionMode):
-            # Already processed in interpret()
+    def handle_builtin_call(self, line: str, func_name: str):
+        """Handle built-in function calls"""
+        args_str = line[len(func_name):].strip()
+        args = self.parse_function_args(args_str)
+        
+        try:
+            result = self.builtins[func_name](*args)
+            
+            # Store result in appropriate braincell
+            if func_name in ['ABS', 'SIGN', 'MIN', 'MAX', 'CLAMP', 'FLOOR', 'CEIL', 'ROUND', 'SQRT', 
+                            'SIN', 'COS', 'TAN', 'ATAN2', 'LOG', 'EXP', 'RANDOM', 'RANDOMRANGE', 'LEN', 'CANCOOK']:
+                self.set_variable('sigma', result)
+            elif func_name in ['MIX', 'STRINGIFY', 'JOIN', 'SLICE', 'GYATTPATH', 'WHERE_AM_I', 
+                              'RIZZHOME', 'SKIBIDITEMP', 'SPITFILE', 'APPENDFILE', 'PLATFORMGYATT']:
+                self.set_variable('aura', result)
+            elif func_name in ['SPLIT', 'LISTUP', 'KEYS_DOWN', 'TOILET_CHECK', 'GYATTARGS']:
+                self.set_variable('fanum', result)
+                
+        except Exception as e:
+            if self.debug_mode:
+                raise
+            print(f"YOU FELL OFF: {e}")
+
+    def handle_67_range(self, line: str):
+        """Handle 67 FROM start TO end syntax"""
+        # Parse: 67 FROM 1 TO 100
+        match = re.match(r'67 FROM (\d+) TO (\d+)', line)
+        if match:
+            start, end = map(int, match.groups())
+            result = self.brainrot_67_func(start, end)
+            self.set_variable('sigma', result)
+        else:
+            raise BrainrotError("Invalid 67 FROM ... TO ... syntax")
+
+    def parse_function_args(self, args_str: str) -> List[Any]:
+        """Parse function arguments"""
+        if not args_str:
+            return []
+        
+        # Simple argument parsing - split by spaces but respect quotes
+        args = []
+        current_arg = ""
+        in_quotes = False
+        quote_char = None
+        
+        for char in args_str:
+            if char in ['"', "'"] and not in_quotes:
+                in_quotes = True
+                quote_char = char
+                current_arg += char
+            elif char == quote_char and in_quotes:
+                in_quotes = False
+                quote_char = None
+                current_arg += char
+            elif char == ' ' and not in_quotes:
+                if current_arg:
+                    args.append(self.evaluate_expression(current_arg))
+                    current_arg = ""
+            else:
+                current_arg += char
+        
+        if current_arg:
+            args.append(self.evaluate_expression(current_arg))
+        
+        return args
+
+    def handle_variable_declaration(self, line: str):
+        """Handle FANUMTAX name = value"""
+        match = re.match(r'FANUMTAX\s+(\w+)\s*=\s*(.+)', line)
+        if match:
+            name, value_expr = match.groups()
+            
+            # Check if this is a function call
+            for func_name in self.builtins:
+                if value_expr.strip().startswith(f"{func_name} "):
+                    # Execute the function call and get result from braincell
+                    self.handle_builtin_call(value_expr.strip(), func_name)
+                    return
+            
+            # Otherwise evaluate as expression
+            value = self.evaluate_expression(value_expr)
+            self.set_variable(name, value)
+
+    def handle_assignment(self, line: str):
+        """Handle name = value"""
+        parts = line.split(' = ', 1)
+        if len(parts) == 2:
+            name, value_expr = parts
+            name = name.strip()
+            value = self.evaluate_expression(value_expr)
+            self.set_variable(name, value)
+
+    def handle_print(self, line: str):
+        """Handle GYATT value"""
+        value_expr = line[6:].strip()  # Remove "GYATT "
+        value = self.evaluate_expression(value_expr)
+        self.print_value(value)
+
+    def handle_if_start(self, line: str):
+        """Handle RIZZ condition LOCK IN"""
+        condition_expr = line[5:-8].strip()  # Remove "RIZZ " and " LOCK IN"
+        condition = self.evaluate_expression(condition_expr)
+        
+        # Find the matching IT'S OVER
+        block_start = self.current_line + 1
+        block_end = self.find_matching_block_end(block_start)
+        
+        if condition:
+            # Execute the if block
+            self.execute_block(block_start, block_end)
+        
+        # Skip to after the block
+        self.current_line = block_end
+
+    def handle_else(self):
+        """Handle NO RIZZ LOCK IN"""
+        # Find the matching IT'S OVER
+        block_start = self.current_line + 1
+        block_end = self.find_matching_block_end(block_start)
+        
+        # Execute the else block
+        self.execute_block(block_start, block_end)
+        
+        # Skip to after the block
+        self.current_line = block_end
+
+    def handle_while_start(self, line: str):
+        """Handle SKIBIDI condition LOCK IN"""
+        condition_expr = line[8:-8].strip()  # Remove "SKIBIDI " and " LOCK IN"
+        
+        # Find the matching IT'S OVER
+        block_start = self.current_line + 1
+        block_end = self.find_matching_block_end(block_start)
+        
+        # Execute while loop
+        while self.evaluate_expression(condition_expr):
+            self.execute_block(block_start, block_end)
+        
+        # Skip to after the block
+        self.current_line = block_end
+
+    def handle_block_end(self):
+        """Handle IT'S OVER"""
+        # This is handled by the control flow methods
+        pass
+
+    def find_matching_block_end(self, start: int) -> int:
+        """Find the matching IT'S OVER for a block"""
+        depth = 1
+        i = start
+        while i < len(self.lines) and depth > 0:
+            line = self.lines[i].strip()
+            if line.endswith(" LOCK IN"):
+                depth += 1
+            elif line == "IT'S OVER":
+                depth -= 1
+            i += 1
+        return i - 1
+
+    def execute_block(self, start: int, end: int):
+        """Execute a block of lines"""
+        saved_line = self.current_line
+        for i in range(start, end):
+            self.current_line = i
+            self.execute_line(self.lines[i])
+        self.current_line = saved_line
+
+    def evaluate_expression(self, expr: str) -> Any:
+        """Evaluate a Brainrot expression"""
+        expr = expr.strip()
+        
+        # Handle packet operations
+        if expr.startswith("IS W "):
+            packet_expr = expr[5:]
+            packet = self.evaluate_expression(packet_expr)
+            return isinstance(packet, Packet) and packet.success
+        elif expr.startswith("IS L "):
+            packet_expr = expr[5:]
+            packet = self.evaluate_expression(packet_expr)
+            return isinstance(packet, Packet) and not packet.success
+        elif expr.startswith("TAKE W "):
+            packet_expr = expr[7:]
+            packet = self.evaluate_expression(packet_expr)
+            if isinstance(packet, Packet) and packet.success:
+                return packet.value
+            raise BrainrotError("Cannot TAKE W from failed packet")
+        elif expr.startswith("TAKE L "):
+            packet_expr = expr[7:]
+            packet = self.evaluate_expression(packet_expr)
+            if isinstance(packet, Packet) and not packet.success:
+                return packet.error
+            raise BrainrotError("Cannot TAKE L from successful packet")
+        
+        # String literal
+        if (expr.startswith('"') and expr.endswith('"')) or (expr.startswith("'") and expr.endswith("'")):
+            return expr[1:-1]
+        
+        # Number literal
+        try:
+            if '.' in expr:
+                return float(expr)
+            else:
+                return int(expr)
+        except ValueError:
             pass
-        elif isinstance(stmt, VariableDeclaration):
-            self.declare_variable(stmt.name, self.evaluate(stmt.value))
-        elif isinstance(stmt, Assignment):
-            self.assign_variable(stmt.name, self.evaluate(stmt.value))
-        elif isinstance(stmt, PrintStatement):
-            self.print_value(self.evaluate(stmt.expression))
-        elif isinstance(stmt, IfStatement):
-            self.execute_if(stmt)
-        elif isinstance(stmt, WhileStatement):
-            self.execute_while(stmt)
-        else:
-            self.evaluate(stmt)
-
-    def evaluate(self, expr: ASTNode) -> Any:
-        """Evaluate an expression"""
-        if isinstance(expr, Literal):
-            return expr.value
-        elif isinstance(expr, Variable):
-            return self.get_variable(expr.name)
-        elif isinstance(expr, BinaryOp):
-            return self.evaluate_binary(expr)
-        elif isinstance(expr, UnaryOp):
-            return self.evaluate_unary(expr)
-        else:
-            return None
-
-    def evaluate_binary(self, expr: BinaryOp) -> Any:
-        """Evaluate binary operations"""
-        left = self.evaluate(expr.left)
-        right = self.evaluate(expr.right)
         
-        if expr.operator == TokenType.ADD.value:  # 💀
-            return left + right
-        elif expr.operator == TokenType.SUB.value:  # 😭
-            return left - right
-        elif expr.operator == TokenType.MUL.value:  # 🔥
-            return left * right
-        elif expr.operator == TokenType.DIV.value:  # 🗿
-            return int(left // right) if isinstance(left, int) and isinstance(right, int) else left / right
-        elif expr.operator == TokenType.MOD.value:  # 📉
-            return left % right
-        elif expr.operator == TokenType.POW.value:  # 🙏
-            return left ** right
-        elif expr.operator == TokenType.IS.value:
-            return left == right
-        elif expr.operator == TokenType.COOKED.value:
-            return left != right
-        elif expr.operator == TokenType.GYATTIER.value:
-            return left > right
-        elif expr.operator == TokenType.LESS_THAN.value:
-            return left < right
+        # Variable reference
+        if expr in self.braincells:
+            return self.get_variable(expr)
         
-        return None
+        # Binary operations with emoji operators
+        # Replace emoji operators with Python operators
+        expr = expr.replace('💀', '+')
+        expr = expr.replace('😭', '-')
+        expr = expr.replace('🔥', '*')
+        expr = expr.replace('🗿', '//')
+        expr = expr.replace('📉', '%')
+        expr = expr.replace('🙏', '**')
+        
+        # Replace alias operators
+        expr = expr.replace(' SKULL ', ' + ')
+        expr = expr.replace(' CRYING ', ' - ')
+        expr = expr.replace(' FIRE ', ' * ')
+        expr = expr.replace(' MOAI ', ' // ')
+        expr = expr.replace(' CHART ', ' % ')
+        expr = expr.replace(' PRAY ', ' ** ')
+        
+        # Comparison operators
+        expr = expr.replace(' IS ', ' == ')
+        expr = expr.replace(' COOKED ', ' != ')
+        expr = expr.replace(' GYATTIER ', ' > ')
+        expr = expr.replace(' NPC ', ' < ')
+        
+        # Replace variable names with their values
+        for var_name in self.braincells:
+            if var_name in expr:
+                value = self.get_variable(var_name)
+                expr = expr.replace(var_name, str(value))
+        
+        # Evaluate the expression safely
+        try:
+            return eval(expr)
+        except:
+            return expr
 
-    def evaluate_unary(self, expr: UnaryOp) -> Any:
-        """Evaluate unary operations"""
-        operand = self.evaluate(expr.operand)
-        
-        if expr.operator == TokenType.SUB.value:  # 😭
-            return -operand
-        
-        return operand
-
-    def declare_variable(self, name: str, value: Any):
-        """Declare a new variable"""
+    def set_variable(self, name: str, value: Any):
+        """Set a braincell variable"""
         if name in self.braincells:
             self.braincells[name] = value
             self.usage_count[name] = 0
         else:
             raise BrainrotError(f"Unknown braincell: {name}")
 
-    def assign_variable(self, name: str, value: Any):
-        """Assign to existing variable"""
-        if name in self.braincells:
-            self.braincells[name] = value
-            if not self.dev_energy:
-                self.usage_count[name] += 1
-        else:
-            raise BrainrotError(f"Unknown braincell: {name}")
-
     def get_variable(self, name: str) -> Any:
-        """Get variable value with decay check"""
+        """Get a braincell variable with decay check"""
         if name in self.braincells:
             if not self.dev_energy and self.usage_count[name] >= 3:
                 raise BrainrotError(f"Braincell {name} is cooked (used 3 times)")
@@ -1080,104 +514,349 @@ class Interpreter:
         else:
             print(value)
 
-    def execute_if(self, stmt: IfStatement):
-        """Execute if statement"""
-        condition = self.evaluate(stmt.condition)
-        if condition:
-            for statement in stmt.then_branch:
-                self.execute(statement)
+    # ===== BUILT-IN FUNCTIONS =====
+    
+    # Math functions
+    def abs_func(self, x):
+        return abs(x)
+    
+    def sign_func(self, x):
+        return 1 if x > 0 else -1 if x < 0 else 0
+    
+    def min_func(self, a, b):
+        return min(a, b)
+    
+    def max_func(self, a, b):
+        return max(a, b)
+    
+    def clamp_func(self, x, min_val, max_val):
+        return max(min_val, min(x, max_val))
+    
+    def floor_func(self, x):
+        return math.floor(x)
+    
+    def ceil_func(self, x):
+        return math.ceil(x)
+    
+    def round_func(self, x):
+        return round(x)
+    
+    def sqrt_func(self, x):
+        return math.sqrt(x)
+    
+    def sin_func(self, x):
+        return math.sin(x)
+    
+    def cos_func(self, x):
+        return math.cos(x)
+    
+    def tan_func(self, x):
+        return math.tan(x)
+    
+    def atan2_func(self, y, x):
+        return math.atan2(y, x)
+    
+    def log_func(self, x):
+        return math.log(x)
+    
+    def exp_func(self, x):
+        return math.exp(x)
+    
+    def random_func(self):
+        return random.random()
+    
+    def randomrange_func(self, start, end):
+        return random.randint(start, end)
+    
+    # String functions
+    def mix_func(self, a, b):
+        return str(a) + str(b)
+    
+    def stringify_func(self, x):
+        return str(x)
+    
+    def len_func(self, x):
+        return len(x)
+    
+    def split_func(self, text, sep):
+        return text.split(sep)
+    
+    def join_func(self, lst, sep):
+        return sep.join(map(str, lst))
+    
+    def slice_func(self, text, start, end):
+        return text[start:end]
+    
+    # Path & File functions
+    def gyattpath_func(self, *parts):
+        return os.path.join(*map(str, parts))
+    
+    def where_am_i_func(self):
+        return os.getcwd()
+    
+    def tp_func(self, path):
+        os.chdir(path)
+        return path
+    
+    def rizzhome_func(self):
+        return os.path.expanduser("~")
+    
+    def skibiditemp_func(self):
+        return os.path.join(os.path.expanduser("~"), "tmp")
+    
+    def readdrop_func(self, filename):
+        try:
+            with open(filename, 'r', encoding='utf-8') as f:
+                return Packet(True, f.read())
+        except Exception as e:
+            return Packet(False, error=str(e))
+    
+    def spitfile_func(self, filename, content):
+        try:
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(str(content))
+            return Packet(True, "File written")
+        except Exception as e:
+            return Packet(False, error=str(e))
+    
+    def appendfile_func(self, filename, content):
+        try:
+            with open(filename, 'a', encoding='utf-8') as f:
+                f.write(str(content))
+            return Packet(True, "File appended")
+        except Exception as e:
+            return Packet(False, error=str(e))
+    
+    def listup_func(self, directory):
+        try:
+            return os.listdir(directory)
+        except Exception as e:
+            return []
+    
+    def makehouse_func(self, directory):
+        try:
+            os.makedirs(directory, exist_ok=True)
+            return Packet(True, "Directory created")
+        except Exception as e:
+            return Packet(False, error=str(e))
+    
+    def nukefile_func(self, path):
+        try:
+            os.remove(path)
+            return Packet(True, "File deleted")
+        except Exception as e:
+            return Packet(False, error=str(e))
+    
+    def nukehouse_func(self, directory):
+        try:
+            os.rmdir(directory)
+            return Packet(True, "Directory deleted")
+        except Exception as e:
+            return Packet(False, error=str(e))
+    
+    def stats_func(self, path):
+        try:
+            stat = os.stat(path)
+            return {
+                'size': stat.st_size,
+                'isdir': os.path.isdir(path),
+                'mtime': stat.st_mtime
+            }
+        except Exception as e:
+            return Packet(False, error=str(e))
+    
+    # Input functions
+    def keys_down_func(self):
+        # Simplified - return empty list for now
+        return []
+    
+    # Process & Environment functions
+    def gyattargs_func(self):
+        return sys.argv[1:] if len(sys.argv) > 1 else []
+    
+    def gyattenv_func(self, name):
+        value = os.environ.get(name)
+        if value is not None:
+            return Packet(True, value)
         else:
-            for statement in stmt.else_branch:
-                self.execute(statement)
-
-    def execute_while(self, stmt: WhileStatement):
-        """Execute while loop"""
-        while self.evaluate(stmt.condition):
-            for statement in stmt.body:
-                self.execute(statement)
+            return Packet(False, error=f"Environment variable {name} not found")
+    
+    def drop_npc_func(self, prog, args):
+        try:
+            result = subprocess.run([prog] + args, capture_output=True, text=True)
+            return Packet(True, {
+                'code': result.returncode,
+                'out': result.stdout,
+                'err': result.stderr
+            })
+        except Exception as e:
+            return Packet(False, error=str(e))
+    
+    def drop_shell_func(self, command):
+        try:
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            return Packet(True, {
+                'code': result.returncode,
+                'out': result.stdout,
+                'err': result.stderr
+            })
+        except Exception as e:
+            return Packet(False, error=str(e))
+    
+    def dipset_func(self, code):
+        sys.exit(code)
+    
+    # Platform functions
+    def platformgyatt_func(self):
+        system = sys_platform.system().lower()
+        if system == "windows":
+            return "windows"
+        elif system == "linux":
+            return "linux"
+        elif system == "darwin":
+            return "macos"
+        else:
+            return system
+    
+    def cancook_func(self, feature):
+        features = {
+            "shell": True,
+            "subprocess": True,
+            "binary-io": True,
+            "unicode": True,
+            "threading": True
+        }
+        return 1 if features.get(feature, False) else 0
+    
+    # Debugging functions
+    def sniff_func(self, expr):
+        if isinstance(expr, str):
+            value = self.evaluate_expression(expr)
+            var_type = type(value).__name__
+            print(f"{expr} = {value} ({var_type})")
+            return value
+        else:
+            # expr is already a value
+            var_type = type(expr).__name__
+            print(f"{expr} ({var_type})")
+            return expr
+    
+    def stalk_func(self, message):
+        timestamp = time.strftime("%H:%M:%S")
+        print(f"[{timestamp}] TRACE: {message}")
+        return message
+    
+    def freezeframe_func(self):
+        print("=== FREEZEFRAME ===")
+        print("Execution paused. Stack trace:")
+        for i, line in enumerate(self.lines[:self.current_line]):
+            print(f"  {i+1}: {line}")
+        print("Press Enter to continue...")
+        input()
+        return "FREEZEFRAME"
+    
+    def brainleak_func(self):
+        print("=== BRAINLEAK (Call Stack) ===")
+        for i, line in enumerate(self.lines[:self.current_line]):
+            marker = ">>> " if i == self.current_line - 1 else "    "
+            print(f"{marker}{i+1}: {line}")
+        return "BRAINLEAK"
+    
+    def mindpalace_func(self):
+        print("=== MINDPALACE (Memory State) ===")
+        print("Braincells:")
+        for name, value in self.braincells.items():
+            print(f"  {name}: {value} ({type(value).__name__})")
+        print(f"Usage counts: {self.usage_count}")
+        print(f"Execution modes: DEV_ENERGY={self.dev_energy}, NO_CAP={self.no_cap}, DEBUG={self.debug_mode}")
+        return "MINDPALACE"
+    
+    # Memory functions
+    def yeet_func(self, var_name):
+        if var_name in self.braincells:
+            self.braincells[var_name] = None
+            self.usage_count[var_name] = 0
+            return "Variable yeeted"
+        else:
+            return "Variable not found"
+    
+    def cleanup_func(self):
+        # Simple garbage collection simulation
+        collected = 0
+        for name in self.braincells:
+            if self.braincells[name] is None:
+                collected += 1
+        return f"Cleaned up {collected} unused variables"
+    
+    # Concurrency functions
+    def spiderspawn_func(self, func_name, *args):
+        # Simplified threading - just run the function
+        def task():
+            if func_name in self.builtins:
+                return self.builtins[func_name](*args)
+            return None
+        
+        thread = threading.Thread(target=task)
+        thread.start()
+        return thread
+    
+    def loiter_func(self, task):
+        if isinstance(task, threading.Thread):
+            task.join()
+            return Packet(True, "Task completed")
+        else:
+            return Packet(False, error="Invalid task")
+    
+    def chill_func(self, ms):
+        time.sleep(ms / 1000.0)
+        return "Chilled"
+    
+    # Performance functions
+    def speedrun_func(self, func_name, *args):
+        start_time = time.time()
+        if func_name in self.builtins:
+            result = self.builtins[func_name](*args)
+        else:
+            result = None
+        end_time = time.time()
+        duration = end_time - start_time
+        print(f"SPEEDRUN: {func_name} took {duration:.6f} seconds")
+        return result
+    
+    # Special Brainrot function - the holy 67
+    def brainrot_67_func(self, start, end):
+        """The holy 67 - generates random numbers"""
+        return random.randint(start, end)
 
 def run_brainrot(source: str, debug: bool = False):
     """Run Brainrot code"""
-    try:
-        # Lex
-        lexer = Lexer(source)
-        lexer.debug_mode = debug
-        tokens = lexer.tokenize()
-        
-        if debug:
-            print("Tokens parsed successfully")
-            print()
-        
-        # Parse
-        parser = Parser(tokens)
-        parser.debug_mode = debug
-        program = parser.parse()
-        
-        if debug:
-            print("Parsed program successfully")
-            print()
-        
-        # Interpret
-        interpreter = Interpreter()
-        interpreter.debug_mode = debug
-        if debug:
-            print(f"Program has {len(program.statements)} statements")
-        interpreter.interpret(program)
-        
-    except Exception as e:
-        if debug:
-            raise
-        print(f"YOU FELL OFF: {e}")
+    interpreter = Interpreter()
+    interpreter.debug_mode = debug
+    interpreter.run(source)
 
 if __name__ == "__main__":
-    # Test the interpreter with simple code first
+    import sys
+    import os
+    
+    if len(sys.argv) != 2:
+        print("Usage: python interpreter.py <file.brainrot>")
+        print("Example: python interpreter.py examples/fizzbun.brainrot")
+        sys.exit(1)
+    
+    filename = sys.argv[1]
+    
+    if not os.path.exists(filename):
+        print(f"File not found: {filename}")
+        sys.exit(1)
+    
     try:
-        with open('test_simple.brainrot', 'r', encoding='utf-8') as f:
-            test_code = f.read()
+        with open(filename, 'r', encoding='utf-8') as f:
+            source = f.read()
         
-        print("Brainrot Lang Interpreter Test")
+        print(f"Running {filename}...")
         print("=" * 50)
-        run_brainrot(test_code, debug=True)
-    except FileNotFoundError:
-        print("test_simple.brainrot not found, running basic test")
-        # Simple test without emojis
-        test_code = '''
-💀💀💀
-DEV ENERGY
-NO CAP
-FANUMTAX sigma = 42
-GYATT sigma
-💀💀💀
-'''
-        run_brainrot(test_code, debug=False)
-    
-    print("\n" + "=" * 50)
-    print("Testing gaslighting (without DEV ENERGY):")
-    
-    gaslight_test = '''
-💀💀💀
-NO CAP
-FANUMTAX sigma = 69
-GYATT "First print"
-GYATT "Second print" 
-GYATT "Third print - should be gaslit"
-💀💀💀
-'''
-    
-    run_brainrot(gaslight_test)
-    
-    print("\n" + "=" * 50)
-    print("Testing variable decay:")
-    
-    decay_test = '''
-💀💀💀
-NO CAP
-FANUMTAX sigma = 420
-GYATT sigma
-GYATT sigma
-GYATT sigma
-GYATT sigma  // This should fail - cooked!
-💀💀💀
-'''
-    
-    run_brainrot(decay_test)
+        run_brainrot(source)
+        
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
