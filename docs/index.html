@@ -4,26 +4,7 @@
 <meta charset="utf-8">
 <title>Brainrot Lang (BRL) — Official Docs</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-  :root{--fg:#eee;--bg:#111;--muted:#bbb;--accent:#a64dff;--codebg:#1a1a1a;--rule:#222;}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;line-height:1.5}
-  header{padding:2rem 1.2rem;border-bottom:1px solid var(--rule)}
-  h1{margin:0 0 .25rem 0;font-size:2rem}
-  h1 span{color:var(--accent)}
-  .subtitle{color:var(--muted)}
-  main{padding:1.2rem;max-width:1000px;margin:0 auto}
-  h2{margin-top:2.2rem;border-bottom:1px solid var(--rule);padding-bottom:.3rem}
-  h3{margin-top:1.6rem}
-  code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace}
-  pre{background:var(--codebg);padding:1rem;border-radius:8px;overflow:auto;border:1px solid var(--rule)}
-  code.inline{background:var(--codebg);padding:.15rem .35rem;border-radius:5px;border:1px solid var(--rule)}
-  table{width:100%;border-collapse:collapse;margin:1rem 0;border:1px solid var(--rule)}
-  th,td{border:1px solid var(--rule);padding:.5rem .6rem;text-align:left}
-  small, .muted{color:var(--muted)}
-  .pill{display:inline-block;padding:.15rem .5rem;border:1px solid var(--rule);border-radius:999px;background:#161616;color:#ddd}
-  .kbd{border:1px solid var(--rule);border-bottom-width:2px;padding:.05rem .35rem;border-radius:4px;background:#161616}
-  .block{background:#0f0f0f;border:1px solid var(--rule);border-radius:8px;padding:1rem}
-</style>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header>
@@ -54,13 +35,29 @@
   <p><b>Comments:</b> <code class="inline">// line</code>, <code class="inline">/* block */</code></p>
 </section>
 
+<section id="datatypes">
+  <h2>Brainrot Data Types</h2>
+  <p>BRL supports exactly <strong>4 core brainrot types</strong>:</p>
+  <table>
+    <thead><tr><th>Type</th><th>Description</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><code>CHONK</code></td><td>Integer (64-bit)</td><td><code>420</code>, <code>69</code></td></tr>
+      <tr><td><code>TWIG</code></td><td>Float (double precision)</td><td><code>3.14</code>, <code>2.718</code></td></tr>
+      <tr><td><code>BLABBER</code></td><td>String (UTF-8)</td><td><code>"SKIBIDI TOILET"</code></td></tr>
+      <tr><td><code>HOARD</code></td><td>List/Array (dynamic)</td><td><code>[1, 2, "GYATT"]</code></td></tr>
+    </tbody>
+  </table>
+  <p><b>Type coercion:</b> Automatic conversion between <code>CHONK</code> and <code>TWIG</code> as needed. Strings can be converted with <code class="inline">STRINGIFY</code>.</p>
+</section>
+
 <section id="memory">
   <h2>Braincells (Variables)</h2>
   <p>There are exactly 7 global braincells: <code class="inline">sigma</code>, <code class="inline">gyatt</code>, <code class="inline">skull</code>, <code class="inline">npc</code>, <code class="inline">goon</code>, <code class="inline">fanum</code>, <code class="inline">aura</code>.</p>
   <ul>
     <li>Declare/assign: <code class="inline">FANUMTAX name = expr</code></li>
     <li>Direct reassign: <code class="inline">name = expr</code></li>
-    <li><b>Decay:</b> each cell’s value can be used 3 times, then becomes “cooked” (unset). Disabled in <span class="pill">DEV ENERGY</span>.</li>
+    <li><b>Decay:</b> each cell's value can be used 3 times, then becomes "cooked" (unset). Disabled in <span class="pill">DEV ENERGY</span>.</li>
+    <li><b>Scope:</b> All braincells are global. Functions create temporary local copies that shadow globals during execution.</li>
   </ul>
   <pre><code>FANUMTAX sigma = 3
 FANUMTAX aura = sigma 💀 4
@@ -168,6 +165,21 @@ IT’S OVER</code></pre>
   </ul>
 </section>
 
+<section id="memorymgmt">
+  <h2>Memory Management & Cleanup</h2>
+  <ul>
+    <li><b>Automatic cleanup:</b> All braincells auto-clean when program ends or variables "cook" (3-use limit)</li>
+    <li><code class="inline">YEET buf</code> — manually free buffer/pixel memory</li>
+    <li><code class="inline">CLEANUP</code> — force garbage collection (dev tool)</li>
+    <li><b>Memory leaks:</b> Disabled in <span class="pill">DEV ENERGY</span> — automatic reference counting</li>
+    <li><b>Stack overflow:</b> Infinite recursion protection (max 1000 calls)</li>
+  </ul>
+  <pre><code>FANUMTAX buf = SPAWN BYTES 1000
+// ... use buffer ...
+YEET buf  // manual cleanup
+// or let it auto-clean when program ends</code></pre>
+</section>
+
 <section id="buffers">
   <h2>Buffers & Pixels</h2>
   <h3>Typed Byte Buffers</h3>
@@ -217,6 +229,36 @@ IT’S OVER</code></pre>
   </ul>
 </section>
 
+<section id="literals">
+  <h2>Literals & Escape Sequences</h2>
+  <h3>String Literals (BLABBER)</h3>
+  <ul>
+    <li><b>Delimiters:</b> Double quotes <code>"text"</code> or single quotes <code>'text'</code></li>
+    <li><b>Escape sequences:</b></li>
+    <ul>
+      <li><code>\\</code> — backslash</li>
+      <li><code>\"</code> — double quote</li>
+      <li><code>\'</code> — single quote</li>
+      <li><code>\n</code> — newline</li>
+      <li><code>\t</code> — tab</li>
+      <li><code>\r</code> — carriage return</li>
+      <li><code>\u{1F480}</code> — Unicode escape (💀)</li>
+    </ul>
+  </ul>
+  <h3>Number Literals</h3>
+  <ul>
+    <li><b>Integers (CHONK):</b> <code>420</code>, <code>0x69</code> (hex), <code>0o77</code> (octal), <code>0b1010</code> (binary)</li>
+    <li><b>Floats (TWIG):</b> <code>3.14</code>, <code>2.718e0</code> (scientific), <code>1e-3</code></li>
+    <li><b>Special values:</b> <code>INF</code> (infinity), <code>NAN</code> (not a number)</li>
+  </ul>
+  <h3>List Literals (HOARD)</h3>
+  <ul>
+    <li><b>Syntax:</b> <code>[item1, item2, item3]</code></li>
+    <li><b>Mixed types:</b> <code>[1, "GYATT", 3.14]</code></li>
+    <li><b>Nested:</b> <code>[[1, 2], [3, 4]]</code></li>
+  </ul>
+</section>
+
 <section id="strings">
   <h2>Strings & Basic Ops</h2>
   <ul>
@@ -254,6 +296,23 @@ IT’S OVER</code></pre>
   </ul>
 </section>
 
+<section id="concurrency">
+  <h2>Concurrency & Async</h2>
+  <ul>
+    <li><code class="inline">SPIDERSPAWN func USING args LOCK IN ... IT'S OVER</code> — spawn concurrent task</li>
+    <li><code class="inline">LOITER task</code> — wait for task completion → W/L packet</li>
+    <li><code class="inline">CHILL ms N</code> — non-blocking sleep (yield to other tasks)</li>
+    <li><b>Threading model:</b> Cooperative multitasking with yield points</li>
+    <li><b>Shared state:</b> All 7 braincells are thread-safe with atomic operations</li>
+    <li><b>Deadlock protection:</b> Automatic timeout after 5 seconds</li>
+  </ul>
+  <pre><code>FANUMTAX task = SPIDERSPAWN slow_function USING 42 LOCK IN
+  // ... do other work ...
+  FANUMTAX result = LOITER task
+  RIZZ IS W result LOCK IN
+    GYATT "Task completed!"</code></pre>
+</section>
+
 <section id="proc">
   <h2>Processes & Env</h2>
   <ul>
@@ -289,12 +348,30 @@ NO RIZZ LOCK IN
 IT’S OVER</code></pre>
 </section>
 
+<section id="debugging">
+  <h2>Debugging & Error Reporting</h2>
+  <ul>
+    <li><code class="inline">SNIFF expr</code> — print debug info (variable name, value, type)</li>
+    <li><code class="inline">STALK "message"</code> — debug trace with timestamp</li>
+    <li><code class="inline">FREEZEFRAME</code> — pause execution and show stack trace</li>
+    <li><code class="inline">BRAINLEAK</code> — print current call stack</li>
+    <li><code class="inline">MINDPALACE</code> — show braincell states and memory usage</li>
+    <li><b>Error levels:</b> <code>LOWKEY</code> (warning), <code>MID</code> (error), <code>COOKED</code> (fatal)</li>
+    <li><b>Debug mode:</b> <code class="inline">DEBUG MODE</code> — enables verbose error messages instead of "YOU FELL OFF"</li>
+  </ul>
+  <pre><code>DEBUG MODE
+FANUMTAX sigma = 42
+SNIFF sigma  // prints: sigma = 42 (CHONK)
+STALK "About to do math"
+FANUMTAX result = sigma 💀 1</code></pre>
+</section>
+
 <section id="quirks">
   <h2>Execution Quirks</h2>
   <ul>
     <li><b>Backwards execution</b> unless you say <code class="inline">NO CAP</code>.</li>
     <li><b>Gaslighting:</b> sometimes prints <code class="inline">RIZZLESS</code>. (Off in <span class="pill">DEV ENERGY</span>.)</li>
-    <li><b>Errors:</b> always render as <code class="inline">YOU FELL OFF</code>.</li>
+    <li><b>Errors:</b> always render as <code class="inline">YOU FELL OFF</code> (unless in DEBUG MODE).</li>
     <li><b>Program ends</b> at closing <code class="inline">💀💀💀</code>, or via <code class="inline">DIPSET n</code>, or the holy 67 edge case.</li>
   </ul>
 </section>
@@ -381,12 +458,37 @@ IT’S OVER
   </ul>
 </section>
 
-<section id="portability">
-  <h2>Portability & Backends</h2>
-  <p>BRL code only sees the meme APIs above. The runtime targets a tiny “Rizzport HAL” behind the scenes (headless/PPM, terminal, native, web, etc.). No SDL/Tk in userland; self-hosting path stays clean.</p>
+<section id="performance">
+  <h2>Performance & Optimization</h2>
+  <ul>
+    <li><b>Interpreter overhead:</b> ~10-50x slower than native code (typical for interpreted languages)</li>
+    <li><code class="inline">HYPERSKOOM</code> — enables JIT compilation for hot loops (experimental)</li>
+    <li><code class="inline">SPEEDRUN "name"</code> — measure execution time of code block</li>
+    <li><b>Memory usage:</b> ~1MB base + 8 bytes per braincell + buffer allocations</li>
+    <li><b>Optimization tips:</b></li>
+    <ul>
+      <li>Use <code>DEV ENERGY</code> to disable variable decay overhead</li>
+      <li>Minimize string concatenation — use <code>JOIN</code> for multiple strings</li>
+      <li>Reuse buffers instead of creating new ones</li>
+      <li>Prefer integer math over float when possible</li>
+    </ul>
+    <li><b>Profiling:</b> <code class="inline">PROFILE ON</code> / <code class="inline">PROFILE OFF</code> — generates performance report</li>
+  </ul>
+  <pre><code>PROFILE ON
+FANUMTAX start = CLOCKED
+// ... your code ...
+FANUMTAX end = CLOCKED
+GYATT "Execution time: " 💀 (end 😭 start) 💀 " seconds"
+PROFILE OFF</code></pre>
 </section>
 
-<footer class="muted" style="margin:3rem 0 2rem">© Brainrot Lang — “usable, cursed, portable.”</footer>
+<section id="portability">
+  <h2>Portability & Backends</h2>
+  <p>BRL code only sees the meme APIs above. The runtime targets a tiny "Rizzport HAL" behind the scenes (headless/PPM, terminal, native, web, etc.). No SDL/Tk in userland; self-hosting path stays clean.</p>
+</section>
+
+<footer class="muted" style="margin:3rem 0 2rem">© Brainrot Lang — "usable, cursed, portable."</footer>
 </main>
+<script src="script.js"></script>
 </body>
 </html>
