@@ -69,7 +69,7 @@ FANUMTAX peak FR 2
 ```brainrot
 FANUMTAX goon FR 69
 SAY goon
-69
+/// 69
 ```
 
 ---
