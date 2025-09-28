@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Brainrot Lang (BRL) — Official Docs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{--fg:#eee;--bg:#111;--muted:#bbb;--accent:#a64dff;--codebg:#1a1a1a;--rule:#222;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;line-height:1.5}
+  header{padding:2rem 1.2rem;border-bottom:1px solid var(--rule)}
+  h1{margin:0 0 .25rem 0;font-size:2rem}
+  h1 span{color:var(--accent)}
+  .subtitle{color:var(--muted)}
+  main{padding:1.2rem;max-width:1000px;margin:0 auto}
+  h2{margin-top:2.2rem;border-bottom:1px solid var(--rule);padding-bottom:.3rem}
+  h3{margin-top:1.6rem}
+  code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace}
+  pre{background:var(--codebg);padding:1rem;border-radius:8px;overflow:auto;border:1px solid var(--rule)}
+  code.inline{background:var(--codebg);padding:.15rem .35rem;border-radius:5px;border:1px solid var(--rule)}
+  table{width:100%;border-collapse:collapse;margin:1rem 0;border:1px solid var(--rule)}
+  th,td{border:1px solid var(--rule);padding:.5rem .6rem;text-align:left}
+  small, .muted{color:var(--muted)}
+  .pill{display:inline-block;padding:.15rem .5rem;border:1px solid var(--rule);border-radius:999px;background:#161616;color:#ddd}
+  .kbd{border:1px solid var(--rule);border-bottom-width:2px;padding:.05rem .35rem;border-radius:4px;background:#161616}
+  .block{background:#0f0f0f;border:1px solid var(--rule);border-radius:8px;padding:1rem}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧠💀 Brainrot Lang <span>(BRL)</span></h1>
+  <div class="subtitle">Meme BASIC with emojis — usable, cursed, and cross-platform.</div>
+</header>
+<main>
+
+<section id="overview">
+  <h2>Overview</h2>
+  <p><strong>Brainrot Lang (BRL)</strong> is a meme-first scripting language with readable keywords (RIZZ, SKIBIDI) and emoji operators (💀, 😭, 🔥…). It’s Turing-complete, has dev-mode sanity, and abstracts OS/graphics behind a tiny HAL so your code stays portable and self-hostable.</p>
+  <ul>
+    <li><b>File extension:</b> <code class="inline">.brainrot</code></li>
+    <li><b>Required program fence:</b></li>
+  </ul>
+  <pre><code>💀💀💀
+... your code ...
+💀💀💀</code></pre>
+  <p><b>Encoding:</b> UTF-8 (emojis are first-class Unicode).</p>
+</section>
+
+<section id="modes">
+  <h2>Modes & Rituals</h2>
+  <ul>
+    <li><code class="inline">NO CAP</code> — run top→bottom (otherwise executes bottom→top).</li>
+    <li><code class="inline">DEV ENERGY</code> — disables gaslighting, disables variable decay, keeps outputs normal, forward exec.</li>
+  </ul>
+  <p><b>Comments:</b> <code class="inline">// line</code>, <code class="inline">/* block */</code></p>
+</section>
+
+<section id="memory">
+  <h2>Braincells (Variables)</h2>
+  <p>There are exactly 7 global braincells: <code class="inline">sigma</code>, <code class="inline">gyatt</code>, <code class="inline">skull</code>, <code class="inline">npc</code>, <code class="inline">goon</code>, <code class="inline">fanum</code>, <code class="inline">aura</code>.</p>
+  <ul>
+    <li>Declare/assign: <code class="inline">FANUMTAX name = expr</code></li>
+    <li>Direct reassign: <code class="inline">name = expr</code></li>
+    <li><b>Decay:</b> each cell’s value can be used 3 times, then becomes “cooked” (unset). Disabled in <span class="pill">DEV ENERGY</span>.</li>
+  </ul>
+  <pre><code>FANUMTAX sigma = 3
+FANUMTAX aura = sigma 💀 4
+sigma = sigma 😭 1</code></pre>
+</section>
+
+<section id="ops">
+  <h2>Math Operators (emoji + single alias)</h2>
+  <table>
+    <thead><tr><th>Emoji</th><th>Alias</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>💀</td><td><code>SKULL</code></td><td>add</td></tr>
+      <tr><td>😭</td><td><code>CRYING</code></td><td>subtract</td></tr>
+      <tr><td>🔥</td><td><code>FIRE</code></td><td>multiply</td></tr>
+      <tr><td>🗿</td><td><code>MOAI</code></td><td>divide (int div)</td></tr>
+      <tr><td>📉</td><td><code>CHART</code></td><td>modulus</td></tr>
+      <tr><td>🙏</td><td><code>PRAY</code></td><td>exponent</td></tr>
+    </tbody>
+  </table>
+  <p>Precedence: <code class="inline">PRAY</code> &gt; <code class="inline">FIRE/MOAI</code> &gt; <code class="inline">SKULL/CRYING</code>.</p>
+</section>
+
+<section id="cmp">
+  <h2>Comparisons & Membership</h2>
+  <ul>
+    <li><code class="inline">IS</code> — equal</li>
+    <li><code class="inline">COOKED</code> — not equal</li>
+    <li><code class="inline">GYATTIER</code> — greater than</li>
+    <li><code class="inline">NPC</code> — less than</li>
+    <li><code class="inline">IN</code> — membership (in list/string)</li>
+  </ul>
+</section>
+
+<section id="blocks">
+  <h2>Blocks (no braces)</h2>
+  <ul>
+    <li>Begin block: <code class="inline">LOCK IN</code></li>
+    <li>End block: <code class="inline">IT’S OVER</code> (also accept <code class="inline">ITS OVER</code>)</li>
+  </ul>
+</section>
+
+<section id="control">
+  <h2>Control Flow</h2>
+  <h3>If / Else</h3>
+  <pre><code>RIZZ condition LOCK IN
+  ...
+NO RIZZ LOCK IN
+  ...
+IT’S OVER</code></pre>
+  <h3>While</h3>
+  <pre><code>SKIBIDI condition LOCK IN
+  ...
+IT’S OVER</code></pre>
+</section>
+
+<section id="funcs">
+  <h2>Functions</h2>
+  <h3>Define & Return</h3>
+  <pre><code>COOK name USING arg1 AND arg2 LOCK IN
+  RETURN value
+IT’S OVER</code></pre>
+  <h3>Call</h3>
+  <pre><code>PULL UP name WITH x AND y</code></pre>
+</section>
+
+<section id="io">
+  <h2>I/O</h2>
+  <ul>
+    <li><code class="inline">GYATT expr</code> — print (every 3rd print becomes aLiTeRnAtInG unless <span class="pill">DEV ENERGY</span>).</li>
+    <li><code class="inline">NPC</code> — input (user must type <code class="inline">skibidi toilet</code> then real input). Input lands in braincell <code class="inline">aura</code>.</li>
+  </ul>
+</section>
+
+<section id="rng67">
+  <h2>RNG — the Holy <code>67</code></h2>
+  <pre><code>67 FROM a TO b   <!-- inclusive integer RNG --></code></pre>
+  <ul>
+    <li>Returns random int in <code class="inline">[a, b]</code>.</li>
+    <li>Edge case: <code class="inline">67 FROM 67 TO 67</code> prints “THE HOLY NUMBER 💀” and halts.</li>
+  </ul>
+</section>
+
+<section id="mathbuiltins">
+  <h2>Math Built-ins (brainrotified)</h2>
+  <table>
+    <thead><tr><th>Function</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>GYATTAN x</code></td><td>sin(x)</td></tr>
+      <tr><td><code>SIGMATH x</code></td><td>cos(x)</td></tr>
+      <tr><td><code>SKULLTAN y x</code></td><td>atan2(y, x)</td></tr>
+      <tr><td><code>RIZZROOT x</code></td><td>sqrt(x)</td></tr>
+      <tr><td><code>FANUMFLOOR x</code></td><td>floor(x)</td></tr>
+      <tr><td><code>CLAMPOUT x a b</code></td><td>clamp x to [a,b]</td></tr>
+      <tr><td><code>GOONMIN a b</code></td><td>min(a,b)</td></tr>
+      <tr><td><code>GOONMAX a b</code></td><td>max(a,b)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="time">
+  <h2>Time</h2>
+  <ul>
+    <li><code class="inline">CLOCKED</code> — current time in seconds (float) → stored in <code class="inline">sigma</code>.</li>
+    <li><code class="inline">SNOOZE ms N</code> — sleep for N milliseconds.</li>
+  </ul>
+</section>
+
+<section id="buffers">
+  <h2>Buffers & Pixels</h2>
+  <h3>Typed Byte Buffers</h3>
+  <ul>
+    <li><code class="inline">SPAWN BYTES n</code> → new byte buffer (handle in <code class="inline">goon</code>).</li>
+    <li><code class="inline">SCOOP BYTE buf AT i</code> → read byte (to <code class="inline">aura</code>).</li>
+    <li><code class="inline">PLUG BYTE buf AT i WITH v</code> → write byte.</li>
+    <li><code class="inline">SQUADLEN buf</code> → length (int) → to <code class="inline">sigma</code>.</li>
+  </ul>
+
+  <h3>Framebuffers & Draw</h3>
+  <ul>
+    <li><code class="inline">OPEN RIZZPORT w h TITLE "txt"</code> — open the render surface (backend abstracted).</li>
+    <li><code class="inline">SPAWN PIXELS w h</code> — offscreen framebuffer handle → stored where you assign it.</li>
+    <li><code class="inline">DROP PIXEL x y rgba</code> — set pixel on the active surface.</li>
+    <li><code class="inline">PUT PX fb X x Y y COLOR c</code> — set pixel on offscreen fb.</li>
+    <li><code class="inline">GET PX fb X x Y y</code> — get color → to <code class="inline">aura</code>.</li>
+    <li><code class="inline">BLIT PIXELS fb</code> — blit offscreen fb onto RIZZPORT.</li>
+    <li><code class="inline">WIPE rgba</code> — clear screen.</li>
+    <li><code class="inline">SHOWTIME</code> — present/swap buffers.</li>
+    <li><code class="inline">LOCKOFF</code> — close the window/surface.</li>
+  </ul>
+
+  <h3>Color Helpers</h3>
+  <ul>
+    <li><code class="inline">PACK RGBA r g b a</code> → returns <code>0xRRGGBBAA</code> → to <code class="inline">aura</code>.</li>
+    <li><code class="inline">UNPACK RGBA color</code> → returns record <code>DRIP r IS .., g IS .., b IS .., a IS .. ENDDRIP</code> → to <code class="inline">aura</code>.</li>
+  </ul>
+
+  <h3>2D Indexing Helpers</h3>
+  <ul>
+    <li><code class="inline">AT2D base WIDTH w X x Y y</code> → 1D index (for grids) → to <code class="inline">aura</code>.</li>
+  </ul>
+
+  <h3>Portable Image IO (PPM)</h3>
+  <ul>
+    <li><code class="inline">WRITE PPM fb TO "out.ppm"</code> — dump framebuffer to PPM file.</li>
+    <li><code class="inline">READ PPM "tex.ppm"</code> — load PPM to a pixel buffer (handle) or error.</li>
+  </ul>
+</section>
+
+<section id="input">
+  <h2>Input (Keyboard)</h2>
+  <ul>
+    <li><code class="inline">KEYS DOWN</code> — list of keys currently pressed → to <code class="inline">fanum</code>.</li>
+    <li><span class="muted">Alias:</span> <code class="inline">TOILET CHECK</code> does the same.</li>
+  </ul>
+</section>
+
+<section id="strings">
+  <h2>Strings & Basic Ops</h2>
+  <ul>
+    <li><code class="inline">MIX a WITH b</code> — concat → to <code class="inline">aura</code>.</li>
+    <li><code class="inline">STRINGIFY x</code> — to string → to <code class="inline">aura</code>.</li>
+    <li><code class="inline">LEN x</code> — length → to <code class="inline">sigma</code>.</li>
+    <li><code class="inline">SPLIT text BY "sep"</code> — list → to <code class="inline">fanum</code>.</li>
+    <li><code class="inline">JOIN list BY "sep"</code> — string → to <code class="inline">aura</code>.</li>
+    <li><code class="inline">SLICE text FROM i TO j</code> — substring → to <code class="inline">aura</code>.</li>
+  </ul>
+</section>
+
+<section id="paths">
+  <h2>Paths & Dirs (Portable)</h2>
+  <ul>
+    <li><code class="inline">GYATTPATH a b c</code> — join path segments.</li>
+    <li><code class="inline">WHERE AM I</code> — current working dir → to <code class="inline">aura</code>.</li>
+    <li><code class="inline">TP "path"</code> — change dir.</li>
+    <li><code class="inline">RIZZHOME</code> — home dir → to <code class="inline">aura</code>.</li>
+    <li><code class="inline">SKIBIDITEMP</code> — temp dir → to <code class="inline">aura</code>.</li>
+  </ul>
+</section>
+
+<section id="files">
+  <h2>Files & FS</h2>
+  <ul>
+    <li><code class="inline">READDROP "file.txt"</code> — read text file → W/L packet.</li>
+    <li><code class="inline">SPITFILE "file.txt" WITH text</code> — write/overwrite.</li>
+    <li><code class="inline">APPENDFILE "file.txt" WITH text</code> — append.</li>
+    <li><code class="inline">LISTUP "dir"</code> — list entries → to <code class="inline">fanum</code>.</li>
+    <li><code class="inline">MAKEHOUSE "dir"</code> — mkdir.</li>
+    <li><code class="inline">NUKEFILE "path"</code> — remove file.</li>
+    <li><code class="inline">NUKEHOUSE "dir"</code> — remove directory.</li>
+    <li><code class="inline">STATS "path"</code> — returns <code>DRIP size IS n, isdir IS true/false, mtime IS secs ENDDRIP</code> → to <code class="inline">aura</code>.</li>
+  </ul>
+</section>
+
+<section id="proc">
+  <h2>Processes & Env</h2>
+  <ul>
+    <li><code class="inline">GYATTARGS</code> — CLI args → to <code class="inline">fanum</code>.</li>
+    <li><code class="inline">GYATTENV "NAME"</code> — env var → W/L packet.</li>
+    <li><code class="inline">DROP NPC "prog" WITH SQUAD "a","b" ENDSQUAD CATCH</code> — safe spawn (no shell) → W packet: <code>DRIP code, out, err ENDDRIP</code>.</li>
+    <li><code class="inline">DROP SHELL "echo SKIBIDI" CATCH</code> — run via shell (portable wrapper) → W packet.</li>
+    <li><code class="inline">DIPSET n</code> — exit program with status code <code>n</code>.</li>
+  </ul>
+</section>
+
+<section id="platform">
+  <h2>Platform & Capabilities</h2>
+  <ul>
+    <li><code class="inline">PLATFORMGYATT</code> — returns <code>"windows"</code> | <code>"linux"</code> | <code>"macos"</code> → to <code class="inline">aura</code>.</li>
+    <li><code class="inline">CANCOOK "feature"</code> — true/false for features like <code>"shell"</code>, <code>"subprocess"</code>, <code>"binary-io"</code> → to <code class="inline">sigma</code> (1 or 0).</li>
+  </ul>
+</section>
+
+<section id="packets">
+  <h2>Packets (Portable Error Model)</h2>
+  <p>Risky ops return <b>W/L packets</b>. Helpers:</p>
+  <ul>
+    <li><code class="inline">IS W x</code>, <code class="inline">IS L x</code> — type check</li>
+    <li><code class="inline">TAKE W x</code>, <code class="inline">TAKE L x</code> — extract value / error</li>
+  </ul>
+  <pre><code>FANUMTAX r = READDROP "data.txt"
+RIZZ IS W r LOCK IN
+  FANUMTAX txt = TAKE W r
+  GYATT txt
+NO RIZZ LOCK IN
+  GYATT "YOU FELL OFF"
+IT’S OVER</code></pre>
+</section>
+
+<section id="quirks">
+  <h2>Execution Quirks</h2>
+  <ul>
+    <li><b>Backwards execution</b> unless you say <code class="inline">NO CAP</code>.</li>
+    <li><b>Gaslighting:</b> sometimes prints <code class="inline">RIZZLESS</code>. (Off in <span class="pill">DEV ENERGY</span>.)</li>
+    <li><b>Errors:</b> always render as <code class="inline">YOU FELL OFF</code>.</li>
+    <li><b>Program ends</b> at closing <code class="inline">💀💀💀</code>, or via <code class="inline">DIPSET n</code>, or the holy 67 edge case.</li>
+  </ul>
+</section>
+
+<section id="examples">
+  <h2>Examples</h2>
+  <h3>Hello World</h3>
+  <pre><code>💀💀💀
+DEV ENERGY
+NO CAP
+GYATT "HELLO WORLD 💀"
+💀💀💀</code></pre>
+
+  <h3>FizzBun</h3>
+  <pre><code>💀💀💀
+DEV ENERGY
+NO CAP
+FANUMTAX sigma = 1
+SKIBIDI sigma NPC 101 LOCK IN
+  RIZZ sigma 📉 15 IS 0 LOCK IN
+    GYATT "GYATT"
+  IT’S OVER
+  RIZZ sigma 📉 3 IS 0 LOCK IN
+    GYATT "SKIBIDI"
+  IT’S OVER
+  RIZZ sigma 📉 5 IS 0 LOCK IN
+    GYATT "RIZZ"
+  IT’S OVER
+  NO RIZZ LOCK IN
+    GYATT sigma
+  IT’S OVER
+  sigma = sigma 💀 1
+IT’S OVER
+💀💀💀</code></pre>
+
+  <h3>Raycaster Skeleton (concept)</h3>
+  <pre><code>💀💀💀
+DEV ENERGY
+NO CAP
+
+FANUMTAX W = 160
+FANUMTAX H = 120
+OPEN RIZZPORT W H TITLE "BRLcast"
+FANUMTAX fb = SPAWN PIXELS W H
+
+FANUMTAX px = 3.5
+FANUMTAX py = 3.5
+FANUMTAX pa = 0.0
+FANUMTAX fov = 1.0472
+
+SKIBIDI true LOCK IN
+  WIPE 0x202020FF
+
+  FANUMTAX x = 0
+  SKIBIDI x NPC W LOCK IN
+    FANUMTAX ra = pa 😭 (fov / 2.0) 💀 (fov 🔥 (x / (W 😭 1.0)))
+    FANUMTAX rdx = SIGMATH ra
+    FANUMTAX rdy = GYATTAN ra
+
+    /* ... do DDA steps over a tile map ... */
+
+    // draw a vertical stripe (placeholder)
+    FANUMTAX y = 0
+    SKIBIDI y NPC H LOCK IN
+      PUT PX fb X x Y y COLOR 0xA0A0A0FF
+      y = y 💀 1
+    IT’S OVER
+
+    x = x 💀 1
+  IT’S OVER
+
+  BLIT PIXELS fb
+  SHOWTIME
+IT’S OVER
+💀💀💀</code></pre>
+</section>
+
+<section id="lex">
+  <h2>Lexing & Aliases</h2>
+  <ul>
+    <li>Emoji ops accept a single alias (table above). Aliases are case-insensitive.</li>
+    <li>Multiword tokens are single keywords (e.g., <code class="inline">LOCK IN</code>, <code class="inline">NO RIZZ</code>, <code class="inline">OPEN RIZZPORT</code>, <code class="inline">SPAWN BYTES</code>).</li>
+    <li>Unicode normalized (NFKC) before tokenizing.</li>
+  </ul>
+</section>
+
+<section id="portability">
+  <h2>Portability & Backends</h2>
+  <p>BRL code only sees the meme APIs above. The runtime targets a tiny “Rizzport HAL” behind the scenes (headless/PPM, terminal, native, web, etc.). No SDL/Tk in userland; self-hosting path stays clean.</p>
+</section>
+
+<footer class="muted" style="margin:3rem 0 2rem">© Brainrot Lang — “usable, cursed, portable.”</footer>
+</main>
+</body>
+</html>
