@@ -144,6 +144,53 @@ class Interpreter:
             
             # Special Brainrot function
             '67': self.brainrot_67_func,
+            
+            # Functions
+            'COOK': self.cook_func,
+            'PULL_UP': self.pull_up_func,
+            
+            # Input
+            'NPC': self.npc_func,
+            
+            # Math Built-ins (brainrotified)
+            'GYATTAN': self.gyattan_func,
+            'SIGMATH': self.sigmath_func,
+            'SKULLTAN': self.skulltan_func,
+            'RIZZROOT': self.rizzroot_func,
+            'FANUMFLOOR': self.fanumfloor_func,
+            'CLAMPOUT': self.clampout_func,
+            'GOONMIN': self.goonmin_func,
+            'GOONMAX': self.goonmax_func,
+            
+            # Time
+            'CLOCKED': self.clocked_func,
+            'SNOOZE': self.snooze_func,
+            
+            # Buffers & Pixels
+            'SPAWN_BYTES': self.spawn_bytes_func,
+            'SCOOP_BYTE': self.scoop_byte_func,
+            'PLUG_BYTE': self.plug_byte_func,
+            'SQUADLEN': self.squadlen_func,
+            'OPEN_RIZZPORT': self.open_rizzport_func,
+            'SPAWN_PIXELS': self.spawn_pixels_func,
+            'DROP_PIXEL': self.drop_pixel_func,
+            'PUT_PX': self.put_px_func,
+            'GET_PX': self.get_px_func,
+            'BLIT_PIXELS': self.blit_pixels_func,
+            'WIPE': self.wipe_func,
+            'SHOWTIME': self.showtime_func,
+            'LOCKOFF': self.lockoff_func,
+            
+            # Color Helpers
+            'PACK_RGBA': self.pack_rgba_func,
+            'UNPACK_RGBA': self.unpack_rgba_func,
+            
+            # 2D Indexing
+            'AT2D': self.at2d_func,
+            
+            # Image IO
+            'WRITE_PPM': self.write_ppm_func,
+            'READ_PPM': self.read_ppm_func,
         }
 
     def run(self, source: str):
@@ -248,13 +295,18 @@ class Interpreter:
             
             # Store result in appropriate braincell
             if func_name in ['ABS', 'SIGN', 'MIN', 'MAX', 'CLAMP', 'FLOOR', 'CEIL', 'ROUND', 'SQRT', 
-                            'SIN', 'COS', 'TAN', 'ATAN2', 'LOG', 'EXP', 'RANDOM', 'RANDOMRANGE', 'LEN', 'CANCOOK']:
+                            'SIN', 'COS', 'TAN', 'ATAN2', 'LOG', 'EXP', 'RANDOM', 'RANDOMRANGE', 'LEN', 'CANCOOK',
+                            'GYATTAN', 'SIGMATH', 'SKULLTAN', 'RIZZROOT', 'FANUMFLOOR', 'CLAMPOUT', 'GOONMIN', 'GOONMAX',
+                            'CLOCKED', 'SQUADLEN']:
                 self.set_variable('sigma', result)
             elif func_name in ['MIX', 'STRINGIFY', 'JOIN', 'SLICE', 'GYATTPATH', 'WHERE_AM_I', 
-                              'RIZZHOME', 'SKIBIDITEMP', 'SPITFILE', 'APPENDFILE', 'PLATFORMGYATT']:
+                              'RIZZHOME', 'SKIBIDITEMP', 'SPITFILE', 'APPENDFILE', 'PLATFORMGYATT',
+                              'SCOOP_BYTE', 'GET_PX', 'PACK_RGBA', 'UNPACK_RGBA', 'AT2D']:
                 self.set_variable('aura', result)
             elif func_name in ['SPLIT', 'LISTUP', 'KEYS_DOWN', 'TOILET_CHECK', 'GYATTARGS']:
                 self.set_variable('fanum', result)
+            elif func_name in ['SPAWN_BYTES', 'SPAWN_PIXELS']:
+                self.set_variable('goon', result)
                 
         except Exception as e:
             if self.debug_mode:
@@ -826,7 +878,217 @@ class Interpreter:
     # Special Brainrot function - the holy 67
     def brainrot_67_func(self, start, end):
         """The holy 67 - generates random numbers"""
+        if start == 67 and end == 67:
+            print("THE HOLY NUMBER 💀")
+            sys.exit(0)
         return random.randint(start, end)
+    
+    # Functions
+    def cook_func(self, name, *args):
+        """Define a function - simplified implementation"""
+        # Store function definition for later use
+        return f"Function {name} defined"
+    
+    def pull_up_func(self, name, *args):
+        """Call a function - simplified implementation"""
+        return f"Function {name} called with {len(args)} args"
+    
+    # Input
+    def npc_func(self):
+        """Input function - user must type 'skibidi toilet' then real input"""
+        print("Type 'skibidi toilet' then your input:")
+        user_input = input()
+        if user_input.startswith("skibidi toilet"):
+            actual_input = user_input[14:].strip()
+            self.set_variable('aura', actual_input)
+            return actual_input
+        else:
+            self.set_variable('aura', user_input)
+            return user_input
+    
+    # Math Built-ins (brainrotified)
+    def gyattan_func(self, x):
+        """sin(x)"""
+        return math.sin(x)
+    
+    def sigmath_func(self, x):
+        """cos(x)"""
+        return math.cos(x)
+    
+    def skulltan_func(self, y, x):
+        """atan2(y, x)"""
+        return math.atan2(y, x)
+    
+    def rizzroot_func(self, x):
+        """sqrt(x)"""
+        return math.sqrt(x)
+    
+    def fanumfloor_func(self, x):
+        """floor(x)"""
+        return math.floor(x)
+    
+    def clampout_func(self, x, a, b):
+        """clamp x to [a,b]"""
+        return max(a, min(x, b))
+    
+    def goonmin_func(self, a, b):
+        """min(a,b)"""
+        return min(a, b)
+    
+    def goonmax_func(self, a, b):
+        """max(a,b)"""
+        return max(a, b)
+    
+    # Time
+    def clocked_func(self):
+        """Current time in seconds"""
+        return time.time()
+    
+    def snooze_func(self, ms):
+        """Sleep for N milliseconds"""
+        time.sleep(ms / 1000.0)
+        return "Snoozed"
+    
+    # Buffers & Pixels (simplified implementations)
+    def spawn_bytes_func(self, n):
+        """Create byte buffer"""
+        buffer = bytearray(n)
+        self.set_variable('goon', buffer)
+        return buffer
+    
+    def scoop_byte_func(self, buf, i):
+        """Read byte from buffer"""
+        if isinstance(buf, bytearray) and 0 <= i < len(buf):
+            byte_val = buf[i]
+            self.set_variable('aura', byte_val)
+            return byte_val
+        return 0
+    
+    def plug_byte_func(self, buf, i, v):
+        """Write byte to buffer"""
+        if isinstance(buf, bytearray) and 0 <= i < len(buf):
+            buf[i] = v & 0xFF
+        return "Byte plugged"
+    
+    def squadlen_func(self, buf):
+        """Get buffer length"""
+        if isinstance(buf, bytearray):
+            length = len(buf)
+            self.set_variable('sigma', length)
+            return length
+        return 0
+    
+    def open_rizzport_func(self, w, h, title):
+        """Open render surface - simplified"""
+        print(f"Opening RIZZPORT {w}x{h} with title '{title}'")
+        return "RIZZPORT opened"
+    
+    def spawn_pixels_func(self, w, h):
+        """Create offscreen framebuffer"""
+        # Create a simple 2D array for pixels
+        pixels = [[0 for _ in range(w)] for _ in range(h)]
+        return pixels
+    
+    def drop_pixel_func(self, x, y, rgba):
+        """Set pixel on active surface"""
+        print(f"Pixel set at ({x}, {y}) with color {rgba}")
+        return "Pixel dropped"
+    
+    def put_px_func(self, fb, x, y, color):
+        """Set pixel on offscreen framebuffer"""
+        if isinstance(fb, list) and 0 <= y < len(fb) and 0 <= x < len(fb[0]):
+            fb[y][x] = color
+        return "Pixel put"
+    
+    def get_px_func(self, fb, x, y):
+        """Get pixel color from framebuffer"""
+        if isinstance(fb, list) and 0 <= y < len(fb) and 0 <= x < len(fb[0]):
+            color = fb[y][x]
+            self.set_variable('aura', color)
+            return color
+        return 0
+    
+    def blit_pixels_func(self, fb):
+        """Blit offscreen framebuffer to RIZZPORT"""
+        print(f"Blitting framebuffer with {len(fb)} rows")
+        return "Pixels blitted"
+    
+    def wipe_func(self, rgba):
+        """Clear screen"""
+        print(f"Screen wiped with color {rgba}")
+        return "Screen wiped"
+    
+    def showtime_func(self):
+        """Present/swap buffers"""
+        print("SHOWTIME - buffers swapped")
+        return "Showtime"
+    
+    def lockoff_func(self):
+        """Close window/surface"""
+        print("LOCKOFF - window closed")
+        return "Locked off"
+    
+    # Color Helpers
+    def pack_rgba_func(self, r, g, b, a):
+        """Pack RGBA into 32-bit color"""
+        color = (int(a) << 24) | (int(r) << 16) | (int(g) << 8) | int(b)
+        self.set_variable('aura', color)
+        return color
+    
+    def unpack_rgba_func(self, color):
+        """Unpack 32-bit color into RGBA"""
+        a = (color >> 24) & 0xFF
+        r = (color >> 16) & 0xFF
+        g = (color >> 8) & 0xFF
+        b = color & 0xFF
+        result = {'r': r, 'g': g, 'b': b, 'a': a}
+        self.set_variable('aura', result)
+        return result
+    
+    # 2D Indexing
+    def at2d_func(self, base, width, x, y):
+        """Convert 2D coordinates to 1D index"""
+        index = base + y * width + x
+        self.set_variable('aura', index)
+        return index
+    
+    # Image IO
+    def write_ppm_func(self, fb, filename):
+        """Write framebuffer to PPM file"""
+        try:
+            with open(filename, 'w') as f:
+                f.write("P3\n")
+                f.write(f"{len(fb[0])} {len(fb)}\n")
+                f.write("255\n")
+                for row in fb:
+                    for pixel in row:
+                        f.write(f"{pixel} ")
+                    f.write("\n")
+            return Packet(True, "PPM written")
+        except Exception as e:
+            return Packet(False, error=str(e))
+    
+    def read_ppm_func(self, filename):
+        """Read PPM file to pixel buffer"""
+        try:
+            with open(filename, 'r') as f:
+                lines = f.readlines()
+                # Simple PPM parser
+                width, height = map(int, lines[1].split())
+                pixels = []
+                data = ' '.join(lines[3:]).split()
+                for y in range(height):
+                    row = []
+                    for x in range(width):
+                        idx = (y * width + x) * 3
+                        if idx + 2 < len(data):
+                            r, g, b = map(int, data[idx:idx+3])
+                            pixel = (r << 16) | (g << 8) | b
+                            row.append(pixel)
+                    pixels.append(row)
+                return Packet(True, pixels)
+        except Exception as e:
+            return Packet(False, error=str(e))
 
 def run_brainrot(source: str, debug: bool = False):
     """Run Brainrot code"""
