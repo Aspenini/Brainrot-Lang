@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Brainrot Lang — Web Interpreter</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #161922;
+    --text: #e6e6e6;
+    --muted: #9aa4b2;
+    --accent: #8b5cf6;
+    --accent-2: #22d3ee;
+    --bad: #ef4444;
+    --good: #22c55e;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 800px at 10% -10%, #171a23 0%, var(--bg) 45%);
+    color: var(--text);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  header {
+    padding: 16px clamp(14px, 3.5vw, 28px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .brand {
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pill {
+    border: 1px solid #2a2f3f;
+    background: #141823;
+    color: var(--muted);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+  }
+  main {
+    padding: 0 clamp(14px, 3.5vw, 28px) 24px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 900px) {
+    main {
+      grid-template-columns: 1.2fr 0.8fr;
+      align-items: start;
+    }
+  }
+  .card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.0));
+    border: 1px solid #252a39;
+    border-radius: 12px;
+    padding: 14px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  }
+  .row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  label { font-weight: 600; color: var(--muted); }
+  textarea, pre, input, button, select {
+    font-family: var(--mono);
+    font-size: 14px;
+  }
+  textarea {
+    width: 100%;
+    min-height: 320px;
+    resize: vertical;
+    color: var(--text);
+    background: #0f1320;
+    border: 1px solid #272c3d;
+    border-radius: 10px;
+    padding: 12px 12px 40px 12px;
+    line-height: 1.45;
+  }
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  button {
+    border: 1px solid #2a2f3f;
+    background: linear-gradient(180deg, #2a2f3f 0%, #1c2030 100%);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform .05s ease, box-shadow .15s ease;
+  }
+  button:active { transform: translateY(1px); }
+  button.primary {
+    border-color: #5b3ee6;
+    background: linear-gradient(180deg, #7c5cfc 0%, #5b3ee6 100%);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(123, 92, 252, .3);
+  }
+  button.ghost { background: transparent; }
+  .status {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+  pre {
+    margin: 0;
+    padding: 12px;
+    background: #0a0d16;
+    border: 1px solid #23283a;
+    border-radius: 10px;
+    max-height: 400px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .ok { color: var(--good); }
+  .err { color: var(--bad); }
+  footer {
+    padding: 14px clamp(14px, 3.5vw, 28px) 40px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  a { color: var(--accent-2); text-decoration: none; }
+  .kbd {
+    font-family: var(--mono);
+    border: 1px solid #2a2f3f;
+    background: #141823;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">🧠 Brainrot Lang <span class="pill">Web Interpreter</span></div>
+    <div class="row">
+      <span class="pill">Ops: 💀 😭 😏 🚡</span>
+      <span class="pill">Cells: aura, peak, goon, mog, npc, sigma, gyatt</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <label for="src">Code</label>
+      <textarea id="src" spellcheck="false"></textarea>
+      <div class="toolbar">
+        <button id="run" class="primary">Run ▶</button>
+        <button id="fmt">Format</button>
+        <button id="sample">Load Sample</button>
+        <button id="clear">Clear Output</button>
+        <span class="status" id="status">ready</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <label>Output</label>
+      <pre id="out" aria-live="polite"></pre>
+    </section>
+  </main>
+
+  <footer>
+    Mobile tip: long-press to paste. Desktop: press <span class="kbd">Ctrl</span>+<span class="kbd">Enter</span> to run.
+  </footer>
+
+<script>
+(() => {
+  const CELLS = new Set(["aura","peak","goon","mog","npc","sigma","gyatt"]);
+  const OP = { "💀":"+","😭":"-","😏":"*","🚡":"/" };
+
+  const $ = (s) => document.querySelector(s);
+  const srcEl = $("#src");
+  const outEl = $("#out");
+  const statusEl = $("#status");
+
+  // Persist code between sessions
+  const KEY = "brainrot-src-v2";
+  srcEl.value = localStorage.getItem(KEY) || `LOCK IN
+FANUMTAX gyatt FR 5
+SKIBIDI gyatt
+  SAY gyatt
+  FANUMTAX gyatt FR gyatt 😭 1
+RIZZUP
+
+FANUMTAX sigma FR 0
+ONGOD sigma
+  SAY "sigma nonzero"
+NO CAP
+  SAY "sigma is zero"
+DEADASS
+ITS OVER`;
+  srcEl.addEventListener("input", () => localStorage.setItem(KEY, srcEl.value));
+
+  function println(s="", cls=null) {
+    const esc = String(s);
+    if (!cls) {
+      outEl.textContent += esc + "\\n";
+    } else {
+      const span = document.createElement("span");
+      span.className = cls;
+      span.textContent = esc + "\\n";
+      outEl.appendChild(span);
+    }
+    outEl.scrollTop = outEl.scrollHeight;
+  }
+  function setStatus(s) {
+    statusEl.textContent = s;
+  }
+  function clearOut() { outEl.textContent = ""; }
+
+  // ====== Lexer / Parser helpers ======
+  function stripComment(line) {
+    const idx = line.indexOf("🖕");
+    return (idx >= 0 ? line.slice(0, idx) : line).trimEnd();
+  }
+  function tokenizeExpr(expr, lineNo) {
+    const tokens = [];
+    const re = /\\s*(\"([^\"\\\\]|\\\\.)*\"|\\d+|[A-Za-z_]\\w*|💀|😭|😏|🚡|FR|\\S)/y;
+    let last = 0;
+    while (last < expr.length) {
+      re.lastIndex = last;
+      const m = re.exec(expr);
+      if (!m) throw new Error(`[line ${lineNo}] Bad token near: ${expr.slice(last,last+10)}`);
+      tokens.push(m[1]);
+      last = re.lastIndex;
+    }
+    return tokens;
+  }
+  function isString(tok){ return tok.length >= 2 && tok[0] === '"' && tok.at(-1) === '"'; }
+  function unescapeString(s){
+    const body = s.slice(1, -1);
+    // naive unescape for common sequences
+    return body
+      .replace(/\\\\n/g, "\\n")
+      .replace(/\\\\t/g, "\\t")
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, "\\\\"); // must be last-ish
+  }
+  function toValue(tok, env, lineNo){
+    if (isString(tok)) return unescapeString(tok);
+    if (/^\\d+$/.test(tok)) return parseInt(tok,10);
+    if (tok in env) return env[tok];
+    throw new Error(`[line ${lineNo}] Unknown name or invalid literal: ${tok}`);
+  }
+  function toRPN(tokens, lineNo){
+    const mapped = tokens.map(t => OP[t] || t);
+    const out = [], ops = [];
+    const prec = { "+":1, "-":1, "*":2, "/":2 };
+    for (const t of mapped){
+      if (t in prec){
+        while (ops.length && (ops.at(-1) in prec) && prec[ops.at(-1)] >= prec[t]) {
+          out.push(ops.pop());
+        }
+        ops.push(t);
+      } else {
+        out.push(t);
+      }
+    }
+    while (ops.length) out.push(ops.pop());
+    return out;
+  }
+  function evalRPN(rpn, env, lineNo){
+    const st = [];
+    for (const t of rpn){
+      if (t === "+" || t === "-" || t === "*" || t === "/"){
+        if (st.length < 2) throw new Error(`[line ${lineNo}] Not enough operands for ${t}`);
+        const b = st.pop(); const a = st.pop();
+        if (t === "+"){
+          if (typeof a === "string" || typeof b === "string") st.push(String(a)+String(b));
+          else st.push(a + b);
+        } else if (t === "-"){
+          if (typeof a === "number" && typeof b === "number") st.push(a - b);
+          else throw new Error(`[line ${lineNo}] '-' not supported for these types`);
+        } else if (t === "*"){
+          if (typeof a === "number" && typeof b === "number") st.push(a * b);
+          else if (typeof a === "string" && Number.isInteger(b)) st.push(a.repeat(b));
+          else if (typeof b === "string" && Number.isInteger(a)) st.push(b.repeat(a));
+          else throw new Error(`[line ${lineNo}] '*' invalid operand types`);
+        } else if (t === "/"){
+          if (typeof a === "number" && typeof b === "number"){
+            if (b === 0) throw new Error(`[line ${lineNo}] division by zero`);
+            st.push(a / b);
+          } else throw new Error(`[line ${lineNo}] '/' only valid for numbers`);
+        }
+      } else {
+        st.push(toValue(t, env, lineNo));
+      }
+    }
+    if (st.length !== 1) throw new Error(`[line ${lineNo}] Expression did not reduce to a single value`);
+    return st[0];
+  }
+  function evalExpr(expr, env, lineNo){
+    const tokens = tokenizeExpr(expr, lineNo);
+    if (tokens.includes("(") || tokens.includes(")")) {
+      throw new Error(`[line ${lineNo}] Parentheses are not supported`);
+    }
+    const rpn = toRPN(tokens, lineNo);
+    return evalRPN(rpn, env, lineNo);
+  }
+  function ensureCell(name, lineNo){
+    if (!CELLS.has(name)) throw new Error(`[line ${lineNo}] Unknown braincell ${name}. Valid: ${Array.from(CELLS).join(", ")}`);
+  }
+  // Build control-flow mapping on the body lines (0..N-1)
+  function buildBlocks(body){
+    const if_starts = {};     // i -> { else: idx|-1, end: idx }
+    const else_to_end = {};   // elseIdx -> endIdx
+    const while_start = {};   // whileStart -> endIdx
+    const while_end = {};     // whileEnd -> startIdx
+    const stack = [];
+    for (let i=0;i<body.length;i++){
+      const raw = body[i].trim();
+      if (!raw) continue;
+      const head = raw.split(/\s+/)[0];
+      if (head === "ONGOD"){
+        stack.push(["IF", i]);
+      } else if (head === "NO"){
+        if (raw.startsWith("NO CAP")){
+          if (!stack.length || stack.at(-1)[0] !== "IF") throw new Error(`[line ${i+2}] 'NO CAP' without matching 'ONGOD'`);
+          const [, ifIdx] = stack.at(-1);
+          stack.push(["ELSE", i]);
+          if_starts[ifIdx] = { else: i, end: -1 };
+        }
+      } else if (head === "DEADASS"){
+        if (!stack.length) throw new Error(`[line ${i+2}] 'DEADASS' without matching 'ONGOD'`);
+        const [kind, idx0] = stack.pop();
+        if (kind === "ELSE"){
+          if (!stack.length || stack.at(-1)[0] !== "IF") throw new Error(`[line ${i+2}] malformed IF/ELSE/DEADASS`);
+          const [, ifIdx] = stack.pop();
+          const prev = if_starts[ifIdx] || { else: idx0, end: -1 };
+          if_starts[ifIdx] = { else: prev.else, end: i };
+          else_to_end[idx0] = i;
+        } else if (kind === "IF"){
+          if_starts[idx0] = { else: -1, end: i };
+        } else {
+          throw new Error(`[line ${i+2}] 'DEADASS' closes unexpected block ${kind}`);
+        }
+      } else if (head === "SKIBIDI"){
+        stack.push(["WHILE", i]);
+      } else if (head === "RIZZUP"){
+        if (!stack.length || stack.at(-1)[0] !== "WHILE") throw new Error(`[line ${i+2}] 'RIZZUP' without matching 'SKIBIDI'`);
+        const [, startIdx] = stack.pop();
+        while_start[startIdx] = i;
+        while_end[i] = startIdx;
+      }
+    }
+    if (stack.length){
+      const [kind, idx0] = stack.at(-1);
+      throw new Error(`[line ${idx0+2}] Unclosed block starting here: ${kind}`);
+    }
+    return { if_starts, else_to_end, while_start, while_end };
+  }
+
+  function runProgram(source) {
+    const lines = source.split(/\\r?\\n/);
+    // strip comments and blanks
+    let cleaned = lines.map(stripComment).filter(l => l.trim() !== "");
+    if (!cleaned.length || cleaned[0].trim() !== "LOCK IN") throw new Error("Program must start with 'LOCK IN'");
+    if (cleaned.at(-1).trim() !== "ITS OVER") throw new Error("Program must end with 'ITS OVER'");
+    const body = cleaned.slice(1, -1);
+
+    const blocks = buildBlocks(body);
+    const { if_starts, else_to_end, while_start, while_end } = blocks;
+
+    const env = {}; // variable store
+    let pc = 0;     // body index
+
+    while (pc < body.length){
+      const raw = body[pc];
+      const lineNo = pc + 2;
+      const line = raw.trim();
+      if (!line) { pc++; continue; }
+      const parts = line.split(/\s+/);
+      const head = parts[0];
+
+      if (head === "FANUMTAX"){
+        if (parts.length < 4 || parts[2] !== "FR") throw new Error(`[line ${lineNo}] Use: FANUMTAX <cell> FR <expr>`);
+        const cell = parts[1];
+        ensureCell(cell, lineNo);
+        const expr = line.split("FR").slice(1).join("FR").trim();
+        env[cell] = evalExpr(expr, env, lineNo);
+        pc++;
+
+      } else if (head === "DIDDLE"){
+        if (parts.length !== 4 || parts[2] !== "FR") throw new Error(`[line ${lineNo}] Use: DIDDLE <dest> FR <sourceCell>`);
+        const dest = parts[1], src = parts[3];
+        ensureCell(dest, lineNo); ensureCell(src, lineNo);
+        if (!(src in env)) throw new Error(`[line ${lineNo}] Cannot copy from empty braincell ${src}`);
+        env[dest] = env[src];
+        pc++;
+
+      } else if (head === "SAY"){
+        const expr = line.slice(3).trim();
+        if (!expr) throw new Error(`[line ${lineNo}] SAY needs an expression`);
+        let val = evalExpr(expr, env, lineNo);
+        if (typeof val === "number" && Number.isInteger(val)) {
+          // keep as is
+        }
+        println(String(val));
+        pc++;
+
+      } else if (head === "ONGOD"){
+        if (!(pc in if_starts)) throw new Error(`[line ${lineNo}] IF mapping missing`);
+        const { else: elseIdx, end: endIdx } = if_starts[pc];
+        const expr = line.slice("ONGOD".length).trim();
+        const cond = truthy(evalExpr(expr, env, lineNo));
+        if (cond) pc++;
+        else pc = (elseIdx !== -1 ? elseIdx + 1 : endIdx + 1);
+
+      } else if (head === "NO"){
+        if (!line.startsWith("NO CAP")) throw new Error(`[line ${lineNo}] Unknown instruction: '${head}'`);
+        if (!(pc in else_to_end)) throw new Error(`[line ${lineNo}] NO CAP mapping missing`);
+        const endIdx = else_to_end[pc];
+        pc = endIdx + 1;
+
+      } else if (head === "DEADASS"){
+        pc++;
+
+      } else if (head === "SKIBIDI"){
+        if (!(pc in while_start)) throw new Error(`[line ${lineNo}] WHILE mapping missing`);
+        const endIdx = while_start[pc];
+        const expr = line.slice("SKIBIDI".length).trim();
+        const cond = truthy(evalExpr(expr, env, lineNo));
+        pc = cond ? pc + 1 : endIdx + 1;
+
+      } else if (head === "RIZZUP"){
+        if (!(pc in while_end)) throw new Error(`[line ${lineNo}] RIZZUP mapping missing`);
+        pc = while_end[pc];
+
+      } else {
+        throw new Error(`[line ${lineNo}] Unknown instruction: ${head}`);
+      }
+    }
+  }
+
+  function truthy(v){
+    if (typeof v === "string") return v.length > 0;
+    if (typeof v === "number") return v !== 0;
+    return !!v;
+  }
+
+  // Actions
+  $("#run").addEventListener("click", () => {
+    setStatus("running...");
+    try {
+      clearOut();
+      runProgram(srcEl.value);
+      setStatus("ok");
+    } catch (e) {
+      println(String(e.message || e), "err");
+      setStatus("error");
+    }
+  });
+  $("#fmt").addEventListener("click", () => {
+    // simple trim trailing spaces and normalize newlines
+    const lines = srcEl.value.split(/\\r?\\n/).map(l => l.replace(/[\\t ]+$/,""));
+    srcEl.value = lines.join("\\n");
+    setStatus("formatted");
+  });
+  $("#sample").addEventListener("click", () => {
+    srcEl.value = `LOCK IN
+FANUMTAX gyatt FR 5
+SKIBIDI gyatt
+  SAY gyatt
+  FANUMTAX gyatt FR gyatt 😭 1
+RIZZUP
+
+FANUMTAX aura FR "wsg"
+FANUMTAX goon FR " WORLD!"
+FANUMTAX sigma FR aura 💀 goon
+SAY sigma
+
+FANUMTAX npc FR 0
+ONGOD npc
+  SAY "nonzero"
+NO CAP
+  SAY "zero"
+DEADASS
+ITS OVER`;
+    setStatus("sample loaded");
+  });
+  $("#clear").addEventListener("click", () => { clearOut(); setStatus("cleared"); });
+
+  // Keyboard shortcut: Ctrl/Cmd+Enter to run
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      $("#run").click();
+    }
+  });
+})();
+</script>
+</body>
+</html>
