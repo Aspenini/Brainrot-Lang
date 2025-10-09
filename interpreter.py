@@ -3,7 +3,7 @@ import sys
 import re
 from typing import List, Tuple, Union, Dict, Any
 
-BRAINCELLS = {"rizz", "aura", "peak", "goon", "mog", "npc", "sigma"}
+BRAINCELLS = {"aura", "peak", "goon", "mog", "npc", "sigma", "gyatt"}
 
 OP_MAP = {
     "💀": "+",
@@ -133,6 +133,72 @@ def eval_expr(expr_src: str, env: Dict[str, Any], line_no: int) -> Any:
     rpn = to_rpn(tokens, line_no)
     return eval_rpn(rpn, env, line_no)
 
+def truthy(val: Any) -> bool:
+    """Determine truthiness for control flow."""
+    if isinstance(val, str):
+        return len(val) > 0
+    if isinstance(val, (int, float)):
+        return val != 0
+    return bool(val)
+
+def build_blocks(body: List[str]) -> Dict[str, Dict[int, Any]]:
+    """Build control flow mappings for IF/ELSE and WHILE blocks."""
+    if_starts: Dict[int, Dict[str, int]] = {}  # pc -> {else: idx or -1, end: idx}
+    else_to_end: Dict[int, int] = {}  # else_pc -> end_pc
+    while_start: Dict[int, int] = {}  # while_pc -> end_pc
+    while_end: Dict[int, int] = {}  # end_pc -> while_pc
+    stack: List[Tuple[str, int]] = []
+    
+    for i, raw in enumerate(body):
+        line = raw.strip()
+        if not line:
+            continue
+        parts = line.split()
+        head = parts[0] if parts else ""
+        
+        if head == "ONGOD":
+            stack.append(("IF", i))
+        elif head == "NO" and line.startswith("NO CAP"):
+            if not stack or stack[-1][0] != "IF":
+                raise BrainrotError(f"[line {i+2}] 'NO CAP' without matching 'ONGOD'")
+            if_idx = stack[-1][1]
+            stack.append(("ELSE", i))
+            if_starts[if_idx] = {"else": i, "end": -1}
+        elif head == "DEADASS":
+            if not stack:
+                raise BrainrotError(f"[line {i+2}] 'DEADASS' without matching 'ONGOD'")
+            kind, idx0 = stack.pop()
+            if kind == "ELSE":
+                if not stack or stack[-1][0] != "IF":
+                    raise BrainrotError(f"[line {i+2}] malformed IF/ELSE/DEADASS")
+                _, if_idx = stack.pop()
+                prev = if_starts.get(if_idx, {"else": idx0, "end": -1})
+                if_starts[if_idx] = {"else": prev["else"], "end": i}
+                else_to_end[idx0] = i
+            elif kind == "IF":
+                if_starts[idx0] = {"else": -1, "end": i}
+            else:
+                raise BrainrotError(f"[line {i+2}] 'DEADASS' closes unexpected block {kind}")
+        elif head == "SKIBIDI":
+            stack.append(("WHILE", i))
+        elif head == "RIZZUP":
+            if not stack or stack[-1][0] != "WHILE":
+                raise BrainrotError(f"[line {i+2}] 'RIZZUP' without matching 'SKIBIDI'")
+            _, start_idx = stack.pop()
+            while_start[start_idx] = i
+            while_end[i] = start_idx
+    
+    if stack:
+        kind, idx0 = stack[-1]
+        raise BrainrotError(f"[line {idx0+2}] Unclosed block starting here: {kind}")
+    
+    return {
+        "if_starts": if_starts,
+        "else_to_end": else_to_end,
+        "while_start": while_start,
+        "while_end": while_end,
+    }
+
 def run(lines: List[str]) -> None:
     # Strip comments & blank lines
     cleaned = [strip_comment(l).rstrip() for l in lines]
@@ -146,6 +212,13 @@ def run(lines: List[str]) -> None:
 
     # Slice to the body
     body = cleaned[1:-1]
+    
+    # Build control flow mappings
+    blocks = build_blocks(body)
+    if_starts = blocks["if_starts"]
+    else_to_end = blocks["else_to_end"]
+    while_start = blocks["while_start"]
+    while_end = blocks["while_end"]
 
     env: Dict[str, Any] = {}
 
@@ -153,55 +226,102 @@ def run(lines: List[str]) -> None:
         if name not in BRAINCELLS:
             raise BrainrotError(f"[line {line_no}] Unknown braincell {name!r}. Valid: {sorted(BRAINCELLS)}")
 
-    for idx, raw in enumerate(body, start=2):  # +2 for 1-based lines incl. 'LOCK IN'
+    pc = 0  # program counter
+    while pc < len(body):
+        raw = body[pc]
+        line_no = pc + 2  # +2 for 1-based lines including 'LOCK IN'
         line = raw.strip()
+        
         if not line:
+            pc += 1
             continue
 
-        # Instructions:
-        # FANUMTAX <cell> FR <expr>
-        # DIDDLE   <dest> FR <sourceCell>
-        # SAY <expr>
         parts = line.split()
-        head = parts[0]
+        head = parts[0] if parts else ""
 
         if head == "FANUMTAX":
             # Expect: FANUMTAX <cell> FR <expr...>
-            if len(parts) < 4:
-                raise BrainrotError(f"[line {idx}] Invalid FANUMTAX syntax. Use: FANUMTAX <cell> FR <expr>")
+            if len(parts) < 4 or parts[2] != "FR":
+                raise BrainrotError(f"[line {line_no}] Invalid FANUMTAX syntax. Use: FANUMTAX <cell> FR <expr>")
             cell = parts[1]
-            ensure_braincell(cell, idx)
-            if parts[2] != "FR":
-                raise BrainrotError(f"[line {idx}] Expected 'FR' after braincell name")
+            ensure_braincell(cell, line_no)
             expr = line.split("FR", 1)[1].strip()  # everything after FR
-            val = eval_expr(expr, env, idx)
+            val = eval_expr(expr, env, line_no)
             env[cell] = val
+            pc += 1
 
         elif head == "DIDDLE":
             # Expect: DIDDLE <dest> FR <sourceCell>
             if len(parts) != 4 or parts[2] != "FR":
-                raise BrainrotError(f"[line {idx}] Invalid DIDDLE syntax. Use: DIDDLE <dest> FR <sourceCell>")
+                raise BrainrotError(f"[line {line_no}] Invalid DIDDLE syntax. Use: DIDDLE <dest> FR <sourceCell>")
             dest = parts[1]
             src = parts[3]
-            ensure_braincell(dest, idx)
-            ensure_braincell(src, idx)
+            ensure_braincell(dest, line_no)
+            ensure_braincell(src, line_no)
             if src not in env:
-                raise BrainrotError(f"[line {idx}] Cannot copy from empty braincell {src!r}")
+                raise BrainrotError(f"[line {line_no}] Cannot copy from empty braincell {src!r}")
             env[dest] = env[src]
+            pc += 1
 
         elif head == "SAY":
             # SAY <expr>
             expr = line[len("SAY"):].strip()
             if not expr:
-                raise BrainrotError(f"[line {idx}] SAY needs an expression or braincell")
-            val = eval_expr(expr, env, idx)
+                raise BrainrotError(f"[line {line_no}] SAY needs an expression or braincell")
+            val = eval_expr(expr, env, line_no)
             # Print like a normal language would
             if isinstance(val, float) and val.is_integer():
                 val = int(val)
             print(val)
+            pc += 1
+
+        elif head == "ONGOD":
+            # IF statement
+            if pc not in if_starts:
+                raise BrainrotError(f"[line {line_no}] IF mapping missing")
+            block_info = if_starts[pc]
+            else_idx = block_info["else"]
+            end_idx = block_info["end"]
+            expr = line[len("ONGOD"):].strip()
+            cond = truthy(eval_expr(expr, env, line_no))
+            if cond:
+                pc += 1  # execute if block
+            else:
+                # jump to else or end
+                pc = (else_idx + 1) if else_idx != -1 else (end_idx + 1)
+
+        elif head == "NO" and line.startswith("NO CAP"):
+            # ELSE statement - jump to end
+            if pc not in else_to_end:
+                raise BrainrotError(f"[line {line_no}] NO CAP mapping missing")
+            end_idx = else_to_end[pc]
+            pc = end_idx + 1
+
+        elif head == "DEADASS":
+            # END IF - just continue
+            pc += 1
+
+        elif head == "SKIBIDI":
+            # WHILE loop
+            if pc not in while_start:
+                raise BrainrotError(f"[line {line_no}] WHILE mapping missing")
+            end_idx = while_start[pc]
+            expr = line[len("SKIBIDI"):].strip()
+            cond = truthy(eval_expr(expr, env, line_no))
+            if cond:
+                pc += 1  # enter loop body
+            else:
+                pc = end_idx + 1  # skip loop
+
+        elif head == "RIZZUP":
+            # END WHILE - jump back to while start
+            if pc not in while_end:
+                raise BrainrotError(f"[line {line_no}] RIZZUP mapping missing")
+            start_idx = while_end[pc]
+            pc = start_idx  # jump back to SKIBIDI
 
         else:
-            raise BrainrotError(f"[line {idx}] Unknown instruction: {head!r}")
+            raise BrainrotError(f"[line {line_no}] Unknown instruction: {head!r}")
 
 def main():
     if len(sys.argv) == 2:
