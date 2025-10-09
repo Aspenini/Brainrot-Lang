@@ -124,14 +124,102 @@ def eval_rpn(rpn: List[str], env: Dict[str, Any], line_no: int) -> Any:
         raise BrainrotError(f"[line {line_no}] Expression did not reduce to a single value")
     return stack[0]
 
-def eval_expr(expr_src: str, env: Dict[str, Any], line_no: int) -> Any:
+def eval_expr(expr_src: str, env: Dict[str, Any], line_no: int, functions: Dict = None) -> Any:
+    # Check for function calls first (before tokenization)
+    if "(" in expr_src and ")" in expr_src:
+        # Simple function call detection
+        paren_start = expr_src.find("(")
+        paren_end = expr_src.rfind(")")
+        if paren_start > 0 and paren_end > paren_start:
+            func_name = expr_src[:paren_start].strip()
+            if functions and func_name in functions:
+                # Parse arguments
+                args_str = expr_src[paren_start+1:paren_end].strip()
+                args = []
+                if args_str:
+                    # Simple argument parsing - split by comma
+                    args = [arg.strip() for arg in args_str.split(",")]
+                
+                return call_function(func_name, args, env, line_no, functions)
+    
     # Replace emoji operators with their text equivalents for tokenization consistency
     tokens = tokenize_expr(expr_src, line_no)
+    
     # Quick validation: reject parentheses for now (not in spec)
     if any(t in {"(", ")"} for t in tokens):
         raise BrainrotError(f"[line {line_no}] Parentheses are not supported in Brainrot expressions")
     rpn = to_rpn(tokens, line_no)
     return eval_rpn(rpn, env, line_no)
+
+def call_function(func_name: str, args: List[str], env: Dict[str, Any], line_no: int, functions: Dict) -> Any:
+    """Call a function with the given arguments."""
+    if func_name not in functions:
+        raise BrainrotError(f"[line {line_no}] Function '{func_name}' not defined")
+    
+    func_def = functions[func_name]
+    expected_params = len(func_def["params"])
+    actual_args = len(args)
+    
+    if actual_args != expected_params:
+        raise BrainrotError(f"[line {line_no}] Function '{func_name}' expects {expected_params} arguments, got {actual_args}")
+    
+    # Create new environment for function
+    func_env = env.copy()
+    
+    # Bind parameters
+    for param, arg_expr in zip(func_def["params"], args):
+        arg_val = eval_expr(arg_expr, env, line_no, functions)
+        func_env[param] = arg_val
+    
+    # Add parameter names to environment so they can be used in expressions
+    for param in func_def["params"]:
+        if param not in func_env:
+            func_env[param] = ""
+    
+    # Execute function body
+    func_body = func_def["body"]
+    result = ""  # Default return value
+    
+    for i, line in enumerate(func_body):
+        line = line.strip()
+        if not line:
+            continue
+            
+        parts = line.split()
+        head = parts[0] if parts else ""
+        
+        if head == "RETURN":
+            if len(parts) > 1:
+                expr = line[len("RETURN"):].strip()
+                result = eval_expr(expr, func_env, line_no, functions)
+            break  # Return immediately
+            
+        elif head == "FANUMTAX":
+            if len(parts) >= 4 and parts[2] == "FR":
+                cell = parts[1]
+                if cell not in BRAINCELLS:
+                    raise BrainrotError(f"[line {line_no}] Unknown braincell {cell}")
+                expr = line.split("FR", 1)[1].strip()
+                func_env[cell] = eval_expr(expr, func_env, line_no, functions)
+                
+        elif head == "DIDDLE":
+            if len(parts) == 4 and parts[2] == "FR":
+                dest, src = parts[1], parts[3]
+                if dest not in BRAINCELLS or src not in BRAINCELLS:
+                    raise BrainrotError(f"[line {line_no}] Unknown braincell")
+                if src not in func_env:
+                    raise BrainrotError(f"[line {line_no}] Cannot copy from empty braincell {src}")
+                func_env[dest] = func_env[src]
+                
+        elif head == "SAY":
+            expr = line[len("SAY"):].strip()
+            if expr:
+                val = eval_expr(expr, func_env, line_no, functions)
+                if isinstance(val, float) and val.is_integer():
+                    val = int(val)
+                print(val)
+    
+    return result
 
 def truthy(val: Any) -> bool:
     """Determine truthiness for control flow."""
@@ -199,19 +287,88 @@ def build_blocks(body: List[str]) -> Dict[str, Dict[int, Any]]:
         "while_end": while_end,
     }
 
+def parse_functions(lines: List[str]) -> Tuple[Dict[str, Dict], List[str]]:
+    """Parse function definitions and return functions dict and main program lines."""
+    functions = {}  # name -> {params: [], body: [], start_line: int}
+    main_lines = []
+    current_func = None
+    func_stack = []
+    
+    for i, line in enumerate(lines):
+        parts = line.strip().split()
+        if not parts:
+            if current_func:
+                functions[current_func]["body"].append("")
+            else:
+                main_lines.append("")
+            continue
+            
+        head = parts[0]
+        
+        if head == "TRALALERO":
+            if len(parts) < 2:
+                raise BrainrotError(f"[line {i+1}] TRALALERO needs a function name")
+            
+            # Parse function signature: name(param1, param2, ...)
+            func_sig = " ".join(parts[1:])
+            if "(" not in func_sig or not func_sig.endswith(")"):
+                raise BrainrotError(f"[line {i+1}] Invalid function signature. Use: TRALALERO name(param1, param2)")
+            
+            func_name = func_sig.split("(")[0].strip()
+            params_str = func_sig.split("(")[1][:-1].strip()  # Remove closing )
+            
+            if func_name in functions:
+                raise BrainrotError(f"[line {i+1}] Function '{func_name}' already defined")
+            
+            # Parse parameters
+            params = []
+            if params_str:
+                params = [p.strip() for p in params_str.split(",")]
+            
+            current_func = func_name
+            functions[func_name] = {
+                "params": params,
+                "body": [],
+                "start_line": i + 1
+            }
+            func_stack.append(func_name)
+            
+        elif head == "TRALALA":
+            if not current_func:
+                raise BrainrotError(f"[line {i+1}] TRALALA without matching TRALALERO")
+            current_func = None
+            func_stack.pop()
+            
+        elif current_func:
+            functions[current_func]["body"].append(line)
+            
+        else:
+            main_lines.append(line)
+    
+    if current_func:
+        raise BrainrotError(f"Unclosed function '{current_func}' - missing TRALALA")
+    
+    return functions, main_lines
+
 def run(lines: List[str]) -> None:
     # Strip comments & blank lines
     cleaned = [strip_comment(l).rstrip() for l in lines]
     # Remove empty lines
     cleaned = [l for l in cleaned if l.strip() != ""]
 
-    if not cleaned or cleaned[0] != "LOCK IN":
+    if not cleaned:
+        raise BrainrotError("Empty program")
+    
+    # Parse functions first
+    functions, main_lines = parse_functions(cleaned)
+    
+    if not main_lines or main_lines[0] != "LOCK IN":
         raise BrainrotError("Program must start with 'LOCK IN'")
-    if cleaned[-1] != "ITS OVER":
+    if main_lines[-1] != "ITS OVER":
         raise BrainrotError("Program must end with 'ITS OVER'")
 
     # Slice to the body
-    body = cleaned[1:-1]
+    body = main_lines[1:-1]
     
     # Build control flow mappings
     blocks = build_blocks(body)
@@ -221,6 +378,7 @@ def run(lines: List[str]) -> None:
     while_end = blocks["while_end"]
 
     env: Dict[str, Any] = {}
+    call_stack = []  # For function calls
 
     def ensure_braincell(name: str, line_no: int):
         if name not in BRAINCELLS:
@@ -246,7 +404,7 @@ def run(lines: List[str]) -> None:
             cell = parts[1]
             ensure_braincell(cell, line_no)
             expr = line.split("FR", 1)[1].strip()  # everything after FR
-            val = eval_expr(expr, env, line_no)
+            val = eval_expr(expr, env, line_no, functions)
             env[cell] = val
             pc += 1
 
@@ -268,7 +426,7 @@ def run(lines: List[str]) -> None:
             expr = line[len("SAY"):].strip()
             if not expr:
                 raise BrainrotError(f"[line {line_no}] SAY needs an expression or braincell")
-            val = eval_expr(expr, env, line_no)
+            val = eval_expr(expr, env, line_no, functions)
             # Print like a normal language would
             if isinstance(val, float) and val.is_integer():
                 val = int(val)
@@ -283,7 +441,7 @@ def run(lines: List[str]) -> None:
             else_idx = block_info["else"]
             end_idx = block_info["end"]
             expr = line[len("ONGOD"):].strip()
-            cond = truthy(eval_expr(expr, env, line_no))
+            cond = truthy(eval_expr(expr, env, line_no, functions))
             if cond:
                 pc += 1  # execute if block
             else:
@@ -307,7 +465,7 @@ def run(lines: List[str]) -> None:
                 raise BrainrotError(f"[line {line_no}] WHILE mapping missing")
             end_idx = while_start[pc]
             expr = line[len("SKIBIDI"):].strip()
-            cond = truthy(eval_expr(expr, env, line_no))
+            cond = truthy(eval_expr(expr, env, line_no, functions))
             if cond:
                 pc += 1  # enter loop body
             else:

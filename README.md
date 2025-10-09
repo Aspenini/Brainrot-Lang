@@ -170,10 +170,53 @@ FANUMTAX sigma FR "ha" 😏 4       🖕 "hahaha"
 
 ---
 
+## Functions
+Define functions with `TRALALERO` and end with `TRALALA`. Functions can take parameters and optionally return values.
+
+```brainrot
+TRALALERO greet(name)
+  FANUMTAX message FR "wsg " 💀 name 💀 "!"
+  RETURN message
+TRALALA
+
+LOCK IN
+FANUMTAX greeting FR greet("sigma")
+SAY greeting
+ITS OVER
+```
+
+**Function Rules:**
+- Function names follow the same rules as braincells
+- Parameters are separated by commas
+- `RETURN` is optional; default return is empty string `""`
+- Functions must be defined before `LOCK IN`
+- Functions can call other functions
+
+**Example with multiple parameters:**
+```brainrot
+TRALALERO add(a, b)
+  RETURN a 💀 b
+TRALALA
+
+TRALALERO multiply(x, y)
+  RETURN x 😏 y
+TRALALA
+
+LOCK IN
+FANUMTAX result FR add(5, 3)
+SAY result
+FANUMTAX product FR multiply(4, 6)
+SAY product
+ITS OVER
+```
+
+---
+
 ## Mini Cheatsheet
 - **Assign:** `FANUMTAX <cell> FR <expr>`  
 - **Copy:** `DIDDLE <dest> FR <source>`  
 - **Print:** `SAY <expr>`  
 - **If:** `ONGOD <expr> … NO CAP … DEADASS` (else optional)  
 - **While:** `SKIBIDI <expr> … RIZZUP`  
+- **Function:** `TRALALERO <name>(params) … RETURN <expr> … TRALALA`
 - **Ops:** `💀 +`, `😭 -`, `😏 *`, `🚡 /`

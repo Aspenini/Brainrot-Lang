@@ -1,0 +1,41 @@
+TRALALERO greet(name)
+  RETURN "wsg " 💀 name 💀 "!"
+TRALALA
+
+TRALALERO add(a, b)
+  RETURN a 💀 b
+TRALALA
+
+TRALALERO multiply(x, y)
+  RETURN x 😏 y
+TRALALA
+
+TRALALERO factorial(n)
+  FANUMTAX sigma FR 1
+  FANUMTAX gyatt FR n
+  SKIBIDI gyatt
+    FANUMTAX sigma FR sigma 😏 gyatt
+    FANUMTAX gyatt FR gyatt 😭 1
+  RIZZUP
+  RETURN sigma
+TRALALA
+
+LOCK IN
+🖕 Test basic functions
+FANUMTAX aura FR greet("sigma")
+SAY aura
+
+FANUMTAX peak FR add(15, 25)
+SAY "15 + 25 = " 💀 peak
+
+FANUMTAX goon FR multiply(6, 7)
+SAY "6 * 7 = " 💀 goon
+
+🖕 Test factorial function
+FANUMTAX mog FR factorial(5)
+SAY "5! = " 💀 mog
+
+🖕 Test more functions
+FANUMTAX npc FR multiply(3, 4)
+SAY "3*4 = " 💀 npc
+ITS OVER
